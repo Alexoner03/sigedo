@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ContractController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -26,9 +27,16 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum'])->group(function () {
 
     #Documentos
+    Route::get('/document/reviewobs',[DocumentController::class,'reviewobs'])->name('document.reviewobs');
+    Route::get('/document/review',[DocumentController::class,'review'])->name('document.review');
     Route::get('/document/welcome',[DocumentController::class,'welcome'])->name('document.welcome');
     Route::resource('/document', DocumentController::class);
 
+    #Contratos
+    Route::resource('/contract', ContractController::class);
+
     #Usuarios
     Route::resource('/user', UserController::class)->except(['show']);
+
+
 });

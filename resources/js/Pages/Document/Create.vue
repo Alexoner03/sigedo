@@ -225,7 +225,7 @@
                     </div>
 
                     <div class="w-full p-4">
-                         <jet-label
+                        <jet-label
                             for="file"
                             value="Subir Documento"
                             class="mb-2"
@@ -240,11 +240,11 @@
                                 <small v-if="isDragReject" class="text-red-500 text-md">Este Archivo no será admitido</small>
                                 <small v-if="isDragAccept" class="text-green-500 text-md">Este Archivo será admitido</small>
                             </div>
-                        </div>  
+                        </div>
                         <div class="py-4" v-if="acceptedFiles.length > 0">
                             <p class="mb-2">Archivo a subir: </p>
-                            <div class="flex">{{acceptedFiles[0].name}} <XIcon class="ml-4 h-6 w-6 text-red-500 cursor-pointer" @click="clearFile"/> </div>    
-                        </div>                      
+                            <div class="flex">{{acceptedFiles[0].name}} <XIcon class="ml-4 h-6 w-6 text-red-500 cursor-pointer" @click="clearFile"/> </div>
+                        </div>
                     </div>
 
                     <div class="w-full py-4 flex justify-center">

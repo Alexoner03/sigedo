@@ -87,4 +87,12 @@ class DocumentController extends Controller
     public function welcome(){
         return Inertia::render('Document/Welcome');
     }
+
+    public function review(){
+        return Inertia::render('Document/Review');
+    }
+
+    public function reviewobs(){
+        return Inertia::render('Document/ReviewObs');
+    }
 }
