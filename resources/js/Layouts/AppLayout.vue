@@ -11,7 +11,7 @@
               <!-- Logo -->
               <div class="flex-shrink-0 flex items-center">
                 <inertia-link
-                  :href="route('document.welcome')"
+                  :href="route('contract.welcome')"
                   class="font-thin text-lg text-coral"
                 >
                   SANABRIA & ASOCIADOS
@@ -21,14 +21,15 @@
               <!-- Navigation Links -->
               <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                 <jet-nav-link
-                  :href="route('document.welcome')"
-                  :active="route().current('document.*')"
+                  :href="route('contract.welcome')"
+                  :active="route().current('contract.*')"
                 >
-                  Documentos
+                  Contratos
                 </jet-nav-link>
                 <jet-nav-link
                   :href="route('user.index')"
                   :active="route().current('user.*')"
+                  v-if="$page.props.user.role_id === 1"
                 >
                   Usuarios
                 </jet-nav-link>
@@ -250,14 +251,15 @@
         >
           <div class="pt-2 pb-3 space-y-1">
             <jet-responsive-nav-link
-              :href="route('document.welcome')"
-              :active="route().current('document.welcome')"
+              :href="route('contract.welcome')"
+              :active="route().current('contract.welcome')"
             >
-              Documentos
+              Contratos
             </jet-responsive-nav-link>
             <jet-responsive-nav-link
               :href="route('user.index')"
               :active="route().current('user.*')"
+              v-if="$page.props.user.role_id === 1"
             >
               Usuarios
             </jet-responsive-nav-link>

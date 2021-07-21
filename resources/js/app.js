@@ -17,7 +17,7 @@ createApp({
             resolveComponent: (name) => require(`./Pages/${name}`).default,
         }),
 })
-    .mixin({ methods: { route } })
+    .mixin({ methods: { route : window.route } })
     .use(InertiaPlugin)
     .use(VCalendar, {})
     .mount(el);

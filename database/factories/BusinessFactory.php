@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Document;
+use App\Models\Business;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DocumentFactory extends Factory
+class BusinessFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Document::class;
+    protected $model = Business::class;
 
     /**
      * Define the model's default state.
@@ -22,7 +22,10 @@ class DocumentFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'business_name' => $this->faker->name(),
+            'ruc' => $this->faker->numerify('##########'),
+            'address' => $this->faker->address,
+            'contact_number' => $this->faker->phoneNumber,
         ];
     }
 }

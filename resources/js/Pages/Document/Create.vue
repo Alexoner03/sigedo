@@ -5,9 +5,14 @@
                 Ingresar Documento
             </h2>
         </template>
+        
+        <div>
+        </div>
 
         <div class="py-12">
             <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+                            <validation-errors />
+
                 <div class="w-full flex justify-between flex-wrap">
 
                     <div class="w-1/2 p-4">
@@ -17,7 +22,7 @@
                             class="mb-2"
                         />
                         <jet-input
-                            v-model="codigo"
+                            v-model="form.codigo"
                             id="codigo"
                             class="w-full"
                             type="text"
@@ -33,7 +38,7 @@
                         />
                         <v-date-picker
                             class="inline-block w-full"
-                            v-model="date"
+                            v-model="form.date"
                         >
                             <template v-slot="{ inputValue, togglePopover }">
                                 <div class="flex items-center">
@@ -79,18 +84,125 @@
                     </div>
 
                     <div class="w-full p-4">
-                        <jet-label
-                            for="email"
-                            value="Correo electrónico"
-                            class="mb-2"
-                        />
-                        <jet-input
-                            v-model="email"
-                            id="email"
-                            class="w-full"
-                            type="email"
-                            placeholder="correo@estuduiosanabria.com"
-                        />
+                        <p class="mb-2">Selecciona al cliente</p>
+
+                        <Listbox v-model="form.selectedClient">
+                            <div class="relative mt-1">
+                                <ListboxButton
+                                    class="
+                                        relative
+                                        w-full
+                                        shadow-sm
+                                        py-3
+                                        pl-3
+                                        pr-10
+                                        text-left
+                                        bg-transparent
+                                        rounded-md
+                                        border
+                                        border-metalgray
+                                        cursor-default
+                                        focus:outline-none
+                                        focus-visible:ring-2
+                                        focus-visible:ring-opacity-75
+                                        focus-visible:ring-white
+                                        focus-visible:ring-offset-secondary
+                                        focus-visible:ring-offset-2
+                                        focus-visible:border-primary
+                                        sm:text-sm
+                                    "
+                                >
+                                    <span class="block truncate">{{
+                                        form.selectedClient.name
+                                    }}</span>
+                                    <span
+                                        class="
+                                            absolute
+                                            inset-y-0
+                                            right-0
+                                            flex
+                                            items-center
+                                            pr-2
+                                            pointer-events-none
+                                        "
+                                    >
+                                        <SelectorIcon
+                                            class="w-5 h-5 text-gray-400"
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+                                </ListboxButton>
+
+                                <transition
+                                    leave-active-class="transition duration-100 ease-in"
+                                    leave-from-class="opacity-100"
+                                    leave-to-class="opacity-0"
+                                >
+                                    <ListboxOptions
+                                        class="
+                                            absolute
+                                            w-full
+                                            py-1
+                                            mt-1
+                                            overflow-auto
+                                            text-base
+                                            bg-white
+                                            rounded-md
+                                            shadow-lg
+                                            max-h-60
+                                            ring-1 ring-black ring-opacity-5
+                                            focus:outline-none
+                                            sm:text-sm
+                                            z-50
+                                        "
+                                    >
+                                        <ListboxOption
+                                            v-slot="{ active, selected }"
+                                            v-for="person in clients"
+                                            :key="person.name"
+                                            :value="person"
+                                            as="template"
+                                        >
+                                            <li
+                                                :class="[
+                                                    active
+                                                        ? 'text-secondary bg-coral'
+                                                        : 'text-primary',
+                                                    'cursor-default select-none relative py-2 pl-10 pr-4 hover:bg-primary transition',
+                                                ]"
+                                            >
+                                                <span
+                                                    :class="[
+                                                        selected
+                                                            ? 'font-medium'
+                                                            : 'font-normal',
+                                                        'block truncate',
+                                                    ]"
+                                                    >{{ person.name }}</span
+                                                >
+                                                <span
+                                                    v-if="selected"
+                                                    class="
+                                                        absolute
+                                                        inset-y-0
+                                                        left-0
+                                                        flex
+                                                        items-center
+                                                        pl-3
+                                                        text-amber-600
+                                                    "
+                                                >
+                                                    <CheckIcon
+                                                        class="w-5 h-5"
+                                                        aria-hidden="true"
+                                                    />
+                                                </span>
+                                            </li>
+                                        </ListboxOption>
+                                    </ListboxOptions>
+                                </transition>
+                            </div>
+                        </Listbox>
                     </div>
 
                     <div class="w-full p-4">
@@ -163,6 +275,7 @@
                                             ring-1 ring-black ring-opacity-5
                                             focus:outline-none
                                             sm:text-sm
+                                            z-50
                                         "
                                     >
                                         <ListboxOption
@@ -219,7 +332,7 @@
 
                         <p class="w-full p-4">
                             <ul>
-                                <li class="cursor-pointer flex items-center" @click="deleteReviewer(index)" v-for="(reviewer,index) in reviewers" :key="reviewer.id">{{ index + 1 }}.-  {{reviewer.name}} <XIcon class="ml-2 h-4 w-4 text-red-500 cursor-pointer"/></li>
+                                <li class="cursor-pointer flex items-center" @click="deleteReviewer(index)" v-for="(reviewer,index) in form.reviewers" :key="reviewer.id">{{ index + 1 }}.-  {{reviewer.name}} <XIcon class="ml-2 h-4 w-4 text-red-500 cursor-pointer"/></li>
                             </ul>
                         </p>
                     </div>
@@ -245,10 +358,13 @@
                             <p class="mb-2">Archivo a subir: </p>
                             <div class="flex">{{acceptedFiles[0].name}} <XIcon class="ml-4 h-6 w-6 text-red-500 cursor-pointer" @click="clearFile"/> </div>
                         </div>
+                        <progress v-if="form.progress" :value="form.progress.percentage" max="100">
+                            {{ form.progress.percentage }}%
+                        </progress>
                     </div>
 
                     <div class="w-full py-4 flex justify-center">
-                        <jet-button class="text-lg" @click="toggleModalSuccess">Enviar Documentos</jet-button>
+                        <jet-button class="text-lg" @click="submitForm">Enviar Documentos</jet-button>
                     </div>
 
                 </div>
@@ -277,7 +393,11 @@ import {
 import { CheckIcon, SelectorIcon } from "@heroicons/vue/solid";
 import { UploadIcon, XIcon } from "@heroicons/vue/outline";
 import { useDropzone } from "vue3-dropzone";
-import { reactive, ref } from "vue";
+import { ref } from "vue";
+import { useForm } from '@inertiajs/inertia-vue3'
+import ValidationErrors from '../../Jetstream/ValidationErrors.vue';
+
+
 
 export default {
   name: "DocumentIndex",
@@ -297,22 +417,16 @@ export default {
     XIcon,
     TransitionRoot,
     ModalSuccess,
+    ValidationErrors,
   },
-  setup() {
-    const date = reactive(new Date());
-    const codigo = ref(null);
-    const email = ref(null);
-    const reviewers = ref([]);
-    const file = ref(null);
+  props : ['collaborators','clients'],
+  setup(props) {
     const openModal = ref(false);
-    const people = [
-      { id: 1, name: "Durward Reynolds", unavailable: false },
-      { id: 2, name: "Kenton Towne", unavailable: false },
-      { id: 3, name: "Therese Wunsch", unavailable: false },
-      { id: 4, name: "Benedict Kessler", unavailable: true },
-      { id: 5, name: "Katelyn Rohan", unavailable: false },
-    ];
+    const people = props.collaborators;
     const selectedPerson = ref(people[0]);
+    const clients = props.clients;
+
+
     const { getRootProps, getInputProps, ...rest } = useDropzone({
       accept: [
         ".xlsx",
@@ -325,20 +439,29 @@ export default {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.documents",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ],
+      onDropAccepted : (acceptedFiles) => form.file = acceptedFiles[0]
     });
 
     const addReviewer = () => {
-      const exist = reviewers.value.findIndex(
+      const exist = form.reviewers.findIndex(
         (elm) => elm.id === selectedPerson.value.id
       );
 
       if (exist === -1) {
-        reviewers.value.push(selectedPerson.value);
+        form.reviewers.push(selectedPerson.value);
       }
     };
 
+    const form = useForm({
+      date: new Date(),
+      codigo: null,
+      file : null,
+      reviewers : [],
+      selectedClient : clients[0]
+    })
+
     const deleteReviewer = (index) => {
-      reviewers.value.splice(index, 1);
+      form.reviewers.splice(index, 1);
     };
 
     const clearFile = () => {
@@ -349,17 +472,25 @@ export default {
       openModal.value = !openModal.value;
     };
 
+    const submitForm = async () => {
+        form.selectedClient = form.selectedClient.id
+        form.reviewers = form.reviewers.map(rev => rev.id)
+
+
+        form.post(route('document.store'),{
+            onError : () => { form.reset(); clearFile() }
+        })
+
+    }
+
     return {
+      form,
+      submitForm,
       openModal,
-      toggleModalSuccess,
-      date,
-      codigo,
-      email,
-      reviewers,
       people,
       selectedPerson,
+      clients,
       addReviewer,
-      file,
       getRootProps,
       getInputProps,
       clearFile,

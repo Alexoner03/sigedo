@@ -128,6 +128,7 @@ class UserController extends Controller
             $this->flashSuccess("El usuario ha sido eliminado");
             return redirect()->route('user.index');
         }
+        
         return back()->withErrors(new MessageBag(['password' => ['Credenciales incorrectas']]));
     }
 }

@@ -2,7 +2,7 @@
     <app-layout>
         <template #header>
             <h2 class="font-light text-4xl text-secondary leading-tight">
-                Administrador de Documentos
+                SIGEDO
             </h2>
             <p class="py-4">¡Bienvenido @{{ $page.props.user.name }}!</p>
         </template>
@@ -12,7 +12,7 @@
                 <div class="w-full flex justify-center">
                     <inertia-link
                         v-if="!($page.props.user.role_id === 3)"
-                        :href="route('document.create')"
+                        :href="route('contract.create')"
                         class="
                             px-8
                             py-2
@@ -26,7 +26,7 @@
                         >Ingresar Documento</inertia-link
                     >
                     <inertia-link
-                        :href="route('document.index')"
+                        :href="route('contract.index')"
                         class="
                             px-8
                             py-2
@@ -49,7 +49,7 @@
 import AppLayout from "@/Layouts/AppLayout";
 
 export default {
-    name : 'DocumentWelcome',
+    name : 'ContractWelcome',
     components: {
         AppLayout,
     },

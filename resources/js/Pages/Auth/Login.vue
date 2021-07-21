@@ -1,10 +1,11 @@
 <template>
     <main-layout>
-        <div class="flex flex-col">
+        <div class="flex flex-col w-1/2">
             <div class="mb-12">
                 <p class="text-secondary text-center text-4xl pt-12">
-                    Administrador de Documentos
+                    SIGEDO
                 </p>
+                <p class="text-center">Administrador de documentos</p>
                 <p class="text-center">Inicia Sesión</p>
             </div>
 

@@ -68,4 +68,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function business()
+    {
+        return $this->belongsTo(Business::class);
+    }
+
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
+    }
+
+    public function contracts()
+    {
+        return $this->belongsToMany(Contract::class,'user_contract')->withPivot('check');
+    }
 }

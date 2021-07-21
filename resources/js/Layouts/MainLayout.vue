@@ -29,7 +29,7 @@
 
             <inertia-link
                 v-if="$page.props.user"
-                :href="route('document.welcome')"
+                :href="route('contract.welcome')"
                 class="text-coral"
             >
                 Ingresar
@@ -53,7 +53,7 @@
                 'pt-16',
                 fullWidth
                     ? 'w-full h-screen'
-                    : 'max-w-6xl px-6 lg:px-8 mx-auto',
+                    : 'max-w-6xl w-full flex justify-center px-6 lg:px-8 mx-auto',
             ]"
         >
             <slot></slot>
