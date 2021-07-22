@@ -46,7 +46,7 @@
                     <p>
                         <span>Tipo de Contrato</span>
                         <span class="float-right">{{
-                            contract.contract_type ?? "No definido"
+                            contract.contract_type?.description ?? "No definido"
                         }}</span>
                     </p>
                     <p>
@@ -55,21 +55,21 @@
                             contract.user_creator.name
                         }}</span>
                     </p>
-                    <p>
+                    <p class="flex justify-between">
                         <span>Observaciones</span>
-                        <span class="float-right">{{
+                        <span class="float-right inline-block w-1/2 break-all text-right">{{
                             contract.observations ?? "No definido"
                         }}</span>
                     </p>
-                    <p>
+                    <p class="flex justify-between">
                         <span>Objetivo</span>
-                        <span class="float-right">{{
+                        <span class="float-right inline-block w-1/2 break-all text-right">{{
                             contract.objective ?? "No definido"
                         }}</span>
                     </p>
-                    <p>
+                    <p class="flex justify-between">
                         <span>Causales de Resolución</span>
-                        <span class="float-right">{{
+                        <span class="float-right inline-block w-1/2 break-all text-right">{{
                             contract.resolution ?? "No definido"
                         }}</span>
                     </p>

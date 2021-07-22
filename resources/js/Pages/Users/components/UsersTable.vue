@@ -55,6 +55,16 @@ export default {
                         data: (row) => row.email,
                     },
                     {
+                        id: "empresa",
+                        name: "Empresa",
+                        data: (row) => row.business.business_name,
+                    },
+                    {
+                        id: "cargo",
+                        name: "Cargo",
+                        data: (row) => row.position.description,
+                    },
+                    {
                         id: "created_at",
                         name: "Registrado",
                         data: (row) => row.created_at,
@@ -93,6 +103,12 @@ export default {
                     },
                 ],
                 data: props.users,
+                style: {
+                    table: {
+                        "white-space": "nowrap",
+                    },
+                },
+                fixedHeader: true,
                 pagination: {
                     enabled: true,
                     limit: 5,

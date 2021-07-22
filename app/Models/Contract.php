@@ -44,7 +44,13 @@ class Contract extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class,'user_contract')->withPivot('check');
+        return $this->belongsToMany(User::class,'user_contract')->withPivot('check','observations');
     }
+
+    protected $casts = [
+        'created_at' => 'datetime:d-m-Y',
+        'request_date' => 'datetime:d-m-Y',
+        'term_date' => 'datetime:d-m-Y',
+    ];
     
 }

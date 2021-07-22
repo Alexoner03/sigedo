@@ -2,7 +2,7 @@
     <app-layout>
         <template #header>
             <h2 class="font-light text-4xl text-secondary leading-tight">
-                Ingresar Documento
+                Ingresar Revisores
             </h2>
         </template>
 
@@ -50,13 +50,20 @@
                         </p>
 
                     </div>
+                    
 
                     <div class="w-full p-4">
+
+                         <h2 class="text-center mb-4 font-light text-4xl text-secondary leading-tight">
+                            Ingresar Documento
+                        </h2>
+
                         <jet-label
                             for="file"
                             value="Subir Documentos"
                             class="mb-2"
                         />
+                        
                         <div v-bind="getRootProps()" class="w-full border-2 border-dashed rounded-md border-metalgray flex justify-center items-center h-40">
                             <input v-bind="getInputProps()" type="file" accept=".xlsx,.docx,.pptx,application/pdf,officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.documents">
                             <div class="w-full flex flex-col items-center justify-center">
@@ -98,7 +105,7 @@ import JetButton from "@/Jetstream/Button";
 import { UploadIcon, XIcon } from "@heroicons/vue/outline";
 import { useDropzone } from "vue3-dropzone";
 import { ref } from "vue";
-import { useForm } from '@inertiajs/inertia-vue3'
+import { useForm, usePage } from '@inertiajs/inertia-vue3'
 import ValidationErrors from '../../Jetstream/ValidationErrors.vue';
 
 
@@ -122,6 +129,7 @@ export default {
     const selectedPosition = ref(props.positions[0])
     const selectedEmployee = ref(null)
     const employees = ref([])
+    const page = usePage();
     
     const form = useForm({
       files : [],
@@ -181,8 +189,15 @@ export default {
     };
 
     const submitForm = async () => {
+        
+        if(selectedBusiness.value.id === 1)
+        {
+            alert('debe seleccionar una empresa diferente')
+            return 
+        }
+        
         form.reviewers = form.reviewers.map(rev => rev.id)
-        form.business_id = selectedBusiness.value.id
+        form.business_id = page.props.value.user.business_id === 1 ? selectedBusiness.value.id : page.props.value.user.business_id
 
         form.post(route('contract.store'),{
             onError : () => { form.reset(); clearFile('all') }

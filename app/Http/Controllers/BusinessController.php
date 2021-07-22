@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\Heading;
 use App\Models\Position;
 use App\Models\User;
+use App\Traits\RequestTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class BusinessController extends Controller
 {
+    use RequestTrait;
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +22,11 @@ class BusinessController extends Controller
      */
     public function index()
     {
-        //
+        $this->authorize('isAdmin', User::class);
+
+        return Inertia::render('Business/Index', [
+            'businesses' => Business::with('headings')->get()
+        ]);
     }
 
     /**
@@ -26,7 +36,11 @@ class BusinessController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('isAdmin', User::class);
+
+        return Inertia::render('Business/Create', [
+            'headings' => Heading::all(),
+        ]);
     }
 
     /**
@@ -37,7 +51,19 @@ class BusinessController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $fields = $request->validate([
+            'business_name' => ['required', 'string', 'max:255'],
+            'ruc' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'address' => ['required', 'numeric', 'exists:roles,id'],
+            'contact_number' => ['required', 'numeric', 'exists:positions,id'],
+            'heading_id' => ['required', 'numeric', 'exists:businesses,id'],
+        ]);
+
+        Business::create($fields);
+
+        $this->flashSuccess("Empresa creada correctamente");
+
+        return redirect()->route('business.index');
     }
 
     /**

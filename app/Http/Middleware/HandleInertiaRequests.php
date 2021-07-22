@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Business;
+use App\Models\Position;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,8 +38,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
+
+        $user = auth()->user();
+
         return array_merge(parent::share($request), [
-            'flash' => session('flash', false)
+            'flash' => session('flash', false),
+            'auth.business' => $user ? Business::find($user->business_id) : null,
+            'auth.position' => $user ? Position::find($user->position_id) : null,
         ]);
     }
 }

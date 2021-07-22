@@ -81,6 +81,6 @@ class User extends Authenticatable
 
     public function contracts()
     {
-        return $this->belongsToMany(Contract::class,'user_contract')->withPivot('check');
+        return $this->belongsToMany(Contract::class,'user_contract')->withPivot('check','observations');
     }
 }

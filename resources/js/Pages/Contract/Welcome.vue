@@ -11,7 +11,6 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="w-full flex justify-center">
                     <inertia-link
-                        v-if="!($page.props.user.role_id === 3)"
                         :href="route('contract.create')"
                         class="
                             px-8

@@ -3,10 +3,12 @@
 </template>
 
 <script>
-import { Grid, h, html } from "gridjs";
+import { Grid, h } from "gridjs";
 import { esES } from "gridjs/dist/gridjs.lang.es";
 import { onMounted, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
+import { usePage } from '@inertiajs/inertia-vue3'
+
 
 export default {
     components: {
@@ -23,6 +25,8 @@ export default {
         const grid = ref(null);
         const wrapper = ref(null);
 
+        const user = usePage().props.value.user
+
         onMounted(() => {
             grid.value = new Grid({
                 columns: [
@@ -33,6 +37,18 @@ export default {
                         data: (row) => row.id,
                     },
                     {
+                        id: "id_assigned",
+                        name: "assigned",
+                        hidden: true,
+                        data: (row) => row.id_user_assigned,
+                    },
+                    {
+                        id: "id_creator",
+                        name: "creator",
+                        hidden: true,
+                        data: (row) => row.id_user_creator,
+                    },
+                    {
                         id: "code",
                         name: "Codigo",
                         data: (row) => row.code,
@@ -41,6 +57,12 @@ export default {
                         id: "state",
                         name: "Estado",
                         data: (row) => row.state,
+                    },
+                    {
+                        id: "finalize",
+                        hidden : true,
+                        name: "Finalizado",
+                        data: (row) => row.term_date,
                     },
                     {
                         id: "request_date",
@@ -61,6 +83,11 @@ export default {
                         id: "user_assigned",
                         name: "Asignado a:",
                         data: (row) => row.user_assigned.name,
+                    },
+                    {
+                        id: "contract_type",
+                        name: "Tipo Contrato",
+                        data: (row) => row.contract_type?.description ?? 'No definido',
                     },
                     {
                         name: "Detalles",
@@ -109,6 +136,7 @@ export default {
                         name: "Acciones",
                         formatter: (cell, row, col) => {
                             return [
+                                user.id === row.cell(1).data && user.id !== row.cell(2).data ? 
                                 h(
                                     "button",
                                     {
@@ -116,7 +144,8 @@ export default {
                                         className: "contract-button-edit",
                                     },
                                     "Revisar"
-                                ),
+                                ) : undefined,
+                                user.id === row.cell(2).data && user.id === row.cell(1).data && row.cell(4).data !== 'archivado' ? 
                                 h(
                                     "button",
                                     {
@@ -125,7 +154,8 @@ export default {
                                         className: "contract-button-edit",
                                     },
                                     "Corregir"
-                                ),
+                                ) : undefined,
+                                user.business_id === 1 && row.cell(5).data === null ? 
                                 h(
                                     "button",
                                     {
@@ -134,7 +164,7 @@ export default {
                                         className: "contract-button-delete",
                                     },
                                     "Finalizar"
-                                ),
+                                ) : undefined,
                             ];
                         },
                     },

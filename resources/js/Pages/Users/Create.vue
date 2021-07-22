@@ -66,6 +66,68 @@
                                 </option>
                             </select>
                         </div>
+                        <div class="mt-4">
+                            <jet-label for="business_id" value="Empresa" />
+                            <select
+                                name="business_id"
+                                id="business_id"
+                                required
+                                v-model="form.business_id"
+                                class="
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
+                            >
+                                <option
+                                    v-for="(business, index) in businesses"
+                                    :key="index"
+                                    :value="business.id"
+                                >
+                                    {{ business.business_name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mt-4">
+                            <jet-label for="position_id" value="Cargo" />
+                            <select
+                                name="position_id"
+                                id="position_id"
+                                required
+                                v-model="form.position_id"
+                                class="
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
+                            >
+                                <option
+                                    v-for="(position, index) in positions"
+                                    :key="index"
+                                    :value="position.id"
+                                >
+                                    {{ position.description }}
+                                </option>
+                            </select>
+                        </div>
 
                         <div class="mt-4">
                             <jet-label for="password" value="Contraseña" />
@@ -139,6 +201,8 @@ export default {
     },
     props: {
         roles: Array,
+        businesses : Array,
+        positions : Array
     },
     setup() {
         const state = reactive({
@@ -148,6 +212,8 @@ export default {
                 role_id: 1,
                 password: "",
                 password_confirmation: "",
+                position_id : 1,
+                business_id : 1,
             }),
         });
 

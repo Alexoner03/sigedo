@@ -18,6 +18,7 @@ class UserContract extends Migration
             $table->unsignedBigInteger('contract_id');
             $table->unsignedBigInteger('user_id');
             $table->boolean('check')->default(false);
+            $table->string('observations')->nullable();
             $table->foreign('contract_id')->references('id')->on('contracts');
             $table->foreign('user_id')->references('id')->on('users');
         });

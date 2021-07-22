@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\Message;
 use App\Models\Business;
 use App\Models\Contract;
+use App\Models\ContractType;
 use App\Models\Document;
 use App\Models\Position;
 use App\Models\Record;
@@ -14,39 +15,39 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
 
 class ContractController extends Controller
 {
     use RequestTrait;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $user = auth()->user();
-        $contracts = Contract::with('users','users.position','users.business','documents','records','userCreator','userAssigned','business','contract_type')
-                             ->where('id_user_creator',$user->id)
-                             ->orWhereHas('users', function($query) use ($user){
-                                $query->where('user_id',$user->id);
-                             })
-                             ->get();
-        return Inertia::render('Contract/Index',[
+
+        $contracts = Contract::with('users', 'users.position', 'users.business', 'documents', 'records', 'userCreator', 'userAssigned', 'business', 'contract_type')
+        ->where('id_user_creator', $user->id)
+        ->orWhereHas('users', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+        ->orderBy('created_at','DESC')
+        ->get();
+        
+        return Inertia::render('Contract/Index', [
             'contracts' => $contracts
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        $businesses = Business::orderBy('business_name','ASC')->get();
+        $user = auth()->user();
+
+        $businesses = $user->role_id === 3 
+            ? Business::whereIn('id', [1, $user->business_id])->orderBy('business_name', 'ASC')->get() 
+            : Business::orderBy('business_name', 'ASC')->get();
+
         $positions = Position::all();
 
         return Inertia::render('Contract/Create', [
@@ -55,12 +56,6 @@ class ContractController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $fields = $request->validate([
@@ -70,6 +65,16 @@ class ContractController extends Controller
             "reviewers.*" => 'numeric|exists:users,id',
             "business_id" => 'numeric|exists:businesses,id'
         ],);
+
+        $workers = array_filter($fields['reviewers'], function($reviewer_id, $index){
+            $reviewer = User::find($reviewer_id);
+            return $reviewer->business_id === 1;
+        },ARRAY_FILTER_USE_BOTH);
+
+        if(count($workers) < 1)
+        {
+            return redirect()->back()->withErrors(new MessageBag(['reviewers' => ['La lista de revisores debe incluir a alguien de SANABRIA & ASOCIADOS']])); 
+        }
 
         $creator = auth()->user();
         $date = new Carbon();
@@ -90,13 +95,12 @@ class ContractController extends Controller
 
         $files = $request->file('files');
 
-        if($request->hasFile('files'))
-        {
+        if ($request->hasFile('files')) {
             foreach ($files as $key => $file) {
-                $path = $file->store( 'public/documents' );
+                $path = $file->store('public/documents');
 
                 Document::create([
-                    'path' => substr( $path, 7 ),
+                    'path' => substr($path, 7),
                     'file_name' => $file->getClientOriginalName(),
                     'is_main' => $key === 0 ? true : false,
                     'contract_id' => $contract->id,
@@ -124,54 +128,246 @@ class ContractController extends Controller
         return redirect()->route('contract.welcome');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Contract $contract)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Contract $contract)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Contract $contract)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Contract $contract)
-    {
-        //
-    }
-
     public function welcome()
     {
         return Inertia::render('Contract/Welcome');
     }
 
+    public function review(Contract $contract)
+    {
+        if(auth()->user()->id !== $contract->id_user_assigned)
+        {
+            $this->flashError("Usted no está asignado para revisar ese documento");
+            return redirect()->route('contract.welcome');   
+        }
+
+        $contract->load('documents');
+
+        return Inertia::render('Contract/Review', [
+            'contract' => $contract
+        ]);
+    }
+
+    public function updateReview(Request $request, Contract $contract)
+    {
+        if(auth()->user()->id !== $contract->id_user_assigned)
+        {
+            $this->flashError("Usted no está asignado para revisar ese documento");
+            return redirect()->route('contract.welcome');   
+        }
+        
+        $fields = $request->validate([
+            "obs" => 'boolean|required', //existe observacion?
+            "message" => 'nullable|string|required_if:obs,true',
+        ]);
+
+        if ($fields["obs"]) {
+
+            $creator = $contract->userCreator;
+
+            Mail::to($creator->email)->queue(new Message($creator, $contract));
+
+            $contract->userAssigned->contracts()->updateExistingPivot($contract->id, ["observations" => $fields['message']]);
+
+            Record::create([
+                'description' => "{$contract->userAssigned->name} encontró observaciones",
+                'contract_id' => $contract->id,
+            ]);
+
+            //devolviendo a creador
+            $contract->id_user_assigned = $contract->id_user_creator;
+        } else {
+
+            $keyOfUserAssigned  = 0; //setearemos la posición del usuario asignado actual en la lista de revisores
+
+            foreach ($contract->users as $key => $user) {
+
+                if ($contract->id_user_assigned == $user->id) {
+                    $keyOfUserAssigned = $key;
+                    $user->contracts()->updateExistingPivot($contract->id, ["check" => true]);
+                }
+            }
+
+            Record::create([
+                'description' => "{$contract->userAssigned->name} ha aprobado el documento",
+                'contract_id' => $contract->id,
+            ]);
+
+            //validando si es el ultimo en la lista si no lo devolvemos al reviewer para que lo finalize
+            if ($contract->users->count() === ($keyOfUserAssigned + 1)) {
+                $contract->id_user_assigned = $contract->id_user_creator;
+                $contract->state = 'archivado';
+                Record::create([
+                    'description' => "finalizó la revisión del contrato",
+                    'contract_id' => $contract->id,
+                ]);
+            } else {
+                $newReviewer = $contract->users[$keyOfUserAssigned + 1];
+                $contract->id_user_assigned = $newReviewer->id;
+
+                Mail::to($newReviewer->email)->queue(new Message($newReviewer, $contract));
+            }
+        }
+
+        $contract->save();
+
+        $this->flashSuccess("El contrato ha sido actualizado correctamente");
+
+        return redirect()->route('contract.welcome');
+    }
+
+    public function correct(Contract $contract)
+    {
+        if(auth()->user()->id !== $contract->id_user_creator)
+        {
+            $this->flashError("Usted no está asignado para corregir ese documento");
+            return redirect()->route('contract.welcome');   
+        }
+
+        $contract->load('documents');
+
+        return Inertia::render('Contract/Correct.vue', [
+            'contract' => $contract
+        ]);
+    }
+
+    public function updateCorrect(Request $request, Contract $contract)
+    {
+        if(auth()->user()->id !== $contract->id_user_creator)
+        {
+            $this->flashError("Usted no está asignado para corregir ese documento");
+            return redirect()->route('contract.welcome');   
+        }
+
+        $request->validate([
+            "file" => 'file|required',
+        ]);
+
+        $contract->load('documents', 'users');
+
+        $keyOfLastUserCheck = -1;
+
+        foreach ($contract->users as $key => $user) {
+
+            if ($user->pivot->check === 0) {
+                $keyOfLastUserCheck = $key;
+                break;
+            }
+        }
+
+        $lastUserCheck = $contract->users[$keyOfLastUserCheck];
+
+        //devolviendo al ultimo revisor sin check
+        $contract->id_user_assigned = $lastUserCheck->id;
+
+        Mail::to($lastUserCheck->email)->queue(new Message($lastUserCheck, $contract));
+
+
+        foreach ($contract->documents as $document) {
+            if ($document->is_main === 1) {
+                Storage::delete("public/{$document->path}");
+                $_path = $request->file('file')->store('public/documents');
+                $document->path = substr($_path, 7);
+                $document->save();
+            }
+        }
+
+        Record::create([
+            'description' => "{$contract->userCreator->name} ha subido correcciones",
+            'contract_id' => $contract->id,
+        ]);
+
+        $contract->save();
+
+        $this->flashSuccess("El contrato ha sido actualizado correctamente");
+
+        return redirect()->route('contract.welcome');
+    }
+
+    public function finalize(Contract $contract)
+    {
+        if(auth()->user()->business_id !== 1)
+        {
+            $this->flashError("Usted no pertenece a sanabria y asociados");
+            return redirect()->route('contract.welcome');   
+        }
+
+
+        $categories = ContractType::all();
+        $contract->load('business', 'userCreator');
+
+        return Inertia::render('Contract/Finalize.vue', [
+            'contract' => $contract,
+            'categories' => $categories
+        ]);
+    }
+
+    public function updateFinalize(Request $request, Contract $contract)
+    {
+        $user = auth()->user();
+
+        if($user->business_id !== 1)
+        {
+            $this->flashError("Usted no pertenece a sanabria y asociados");
+            return redirect()->route('contract.welcome');   
+        }
+
+
+        $fields = $request->validate([
+            'objective' => 'string|required',
+            'resolution' => 'string|required',
+            'observations' => 'string|required',
+            'contract_type_id' => 'numeric|required',
+        ]);
+
+        $fields['term_date'] = Carbon::now();
+
+        $contract->update($fields);
+
+        Record::create([
+            'description' => "{$user->name} ha finalizado el contrato",
+            'contract_id' => $contract->id,
+        ]);
+
+        $this->flashSuccess("El contrato ha sido finalizado correctamente");
+
+        return redirect()->route('contract.welcome');
+    }
+
+    public function forceUpdateFinalize(Request $request, Contract $contract)
+    {        
+        $_user = auth()->user();
+
+        if($_user->business_id !== 1)
+        {
+            $this->flashError("Usted no pertenece a sanabria y asociados");
+            return redirect()->route('contract.welcome');   
+        }
+
+        Record::create([
+            'description' => "{$_user->name} ha forzado finalización del contrato",
+            'contract_id' => $contract->id,
+        ]);
+
+        $fields = $request->validate([
+            'objective' => 'string|required',
+            'resolution' => 'string|required',
+            'observations' => 'string|required',
+            'contract_type_id' => 'numeric|required',
+        ]);
+
+
+        foreach ($contract->users as $user) {
+            $user->contracts()->updateExistingPivot($contract->id, ["check" => true]);
+        }
+
+        $fields['term_date'] = Carbon::now();
+        $fields['state'] = 'archivado';
+
+        $contract->update($fields);
+
+        $this->flashSuccess("El contrato ha sido finalizado correctamente");
+
+        return redirect()->route('contract.welcome');
+    }
 }

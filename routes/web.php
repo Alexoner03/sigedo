@@ -29,22 +29,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     #contratos
     Route::get('/contract/menu',[ContractController::class,'welcome'])->name('contract.welcome');
-    Route::resource('/contract', ContractController::class);
+    Route::get('/contract/{contract}/review',[ContractController::class,'review'])->name('contract.review');
+    Route::get('/contract/{contract}/correct',[ContractController::class,'correct'])->name('contract.correct');
+    Route::get('/contract/{contract}/finalize',[ContractController::class,'finalize'])->name('contract.finalize');
+    Route::patch('/contract/{contract}/review',[ContractController::class,'updateReview'])->name('contract.review.update');
+    Route::post('/contract/{contract}/correct',[ContractController::class,'updateCorrect'])->name('contract.correct.update');
+    Route::patch('/contract/{contract}/finalize',[ContractController::class,'updateFinalize'])->name('contract.finalize.update');
+    Route::patch('/contract/{contract}/finalize-forze',[ContractController::class,'forceUpdateFinalize'])->name('contract.finalize.update.force');
+    Route::resource('/contract', ContractController::class)->only(['index','create','store']);
 
     #business
     Route::get('/businees/{business}/position/{position}/get-employees',[BusinessController::class,'getEmployeeByBusinessAndPosition'])->name('business.position.users');
-
-
-    #Documentos
-    Route::get('/document/{user}/client',[DocumentController::class,'getDocumentsByClient'])->name('document.client');
-    Route::get('/document/{document}/show-observations',[DocumentController::class,'showWithObservations'])->name('document.observations');
-    Route::get('/document/{document}/contract',[DocumentController::class,'finalizeContract'])->name('document.contract');
-    Route::post('/document/{document}/finalize',[DocumentController::class,'updateFromCreatorFinalize'])->name('document.contract.finalize');
-    Route::post('/document/{document}/update-from-reviewer',[DocumentController::class,'updateFromReviewer'])->name('document.update.reviewer');
-    Route::post('/document/{document}/update-from-creator',[DocumentController::class,'updateFromCreator'])->name('document.update.creator');
-    Route::resource('/document', DocumentController::class);
-
-    #Contratos
+    Route::resource('business', BusinessController::class);
 
     #Usuarios
     Route::resource('/user', UserController::class)->except(['show']);

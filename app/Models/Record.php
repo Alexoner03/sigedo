@@ -13,4 +13,8 @@ class Record extends Model
     {
         return $this->belongsTo(Contract::class);
     }
+
+    protected $casts = [
+        'created_at' => 'datetime:d-m-Y',
+    ];
 }
