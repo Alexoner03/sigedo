@@ -25,6 +25,8 @@ class Business extends Model
         return $this->hasMany(Contract::class);
     }
     
-
+    protected $casts = [
+        'created_at' => 'datetime:d-m-Y',
+    ];
 }
 

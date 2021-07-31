@@ -16,7 +16,7 @@ class PositionSeeder extends Seeder
     {
         //gerencia general, gerencia comercial, gerencia logistica, gerencia RRHH, otros
         Position::create([
-            'description' => 'SANABRIA Y ASOCIADOS'
+            'description' => 'PERSONAL DE SANABRIA Y ASOCIADOS'
         ]);
         Position::create([
             'description' => 'GERENCIA GENERAL'

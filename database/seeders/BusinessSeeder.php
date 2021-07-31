@@ -25,10 +25,10 @@ class BusinessSeeder extends Seeder
             'heading_id' => 23
         ]);
 
-        foreach ($headings as $heading) {
-            Business::factory(5)->create([
-                'heading_id' => $heading->id
-            ]);
-        }
+        // foreach ($headings as $heading) {
+        //     Business::factory(5)->create([
+        //         'heading_id' => $heading->id
+        //     ]);
+        // }
     }
 }

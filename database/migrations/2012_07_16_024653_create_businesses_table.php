@@ -18,6 +18,7 @@ class CreateBusinessesTable extends Migration
             $table->string('business_name');
             $table->string('ruc',11);
             $table->string('address');
+            $table->boolean('state')->default(true);
             $table->string('contact_number');
             $table->unsignedBigInteger('heading_id');
             $table->foreign('heading_id')->references('id')->on('headings');

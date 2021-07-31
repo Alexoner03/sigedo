@@ -17,40 +17,40 @@ class UserSeeder extends Seeder
     public function run()
     {
 
-        $businesses = Business::all();
-        $positions = Position::all();
+        // $businesses = Business::all();
+        // $positions = Position::all();
 
         User::factory(1)->create([
-            'email' => 'undergrounder16@gmail.com'
+            'email' => 'administrador@sigedo.test'
         ]);
 
-        foreach ($businesses as $business) {
+        // foreach ($businesses as $business) {
             
-            if($business->id === 1){
+        //     if($business->id === 1){
 
-               foreach ($positions as $position) {
-                    User::factory(20)->create([
-                        'role_id' => 2,
-                        'position_id' => $position->id,
-                        'business_id' => $business->id,
-                    ]);
-               }
+        //        foreach ($positions as $position) {
+        //             User::factory(20)->create([
+        //                 'role_id' => 2,
+        //                 'position_id' => $position->id,
+        //                 'business_id' => $business->id,
+        //             ]);
+        //        }
 
-            }else{
+        //     }else{
 
-                foreach ($positions as $position) {
+        //         foreach ($positions as $position) {
 
-                    if($position->id !== 5)
-                    {
-                        User::factory(20)->create([
-                            'role_id' => 3,
-                            'position_id' => $position->id,
-                            'business_id' => $business->id,
-                        ]);
-                    }
-               } 
+        //             if($position->id !== 5)
+        //             {
+        //                 User::factory(20)->create([
+        //                     'role_id' => 3,
+        //                     'position_id' => $position->id,
+        //                     'business_id' => $business->id,
+        //                 ]);
+        //             }
+        //        } 
                 
-            }
-        }
+        //     }
+        // }
     }
 }

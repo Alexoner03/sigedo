@@ -33,6 +33,13 @@
                 >
                   Usuarios
                 </jet-nav-link>
+                <jet-nav-link
+                  :href="route('business.index')"
+                  :active="route().current('business.*')"
+                  v-if="$page.props.user.role_id === 1"
+                >
+                  Clientes
+                </jet-nav-link>
               </div>
             </div>
 
@@ -262,6 +269,13 @@
               v-if="$page.props.user.role_id === 1"
             >
               Usuarios
+            </jet-responsive-nav-link>
+            <jet-responsive-nav-link
+              :href="route('business.index')"
+              :active="route().current('business.*')"
+              v-if="$page.props.user.role_id === 1"
+            >
+              Clientes
             </jet-responsive-nav-link>
           </div>
 

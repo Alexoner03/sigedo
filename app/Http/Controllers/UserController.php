@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Fortify\PasswordValidationRules;
 use App\Models\Business;
+use App\Models\Contract;
 use App\Models\Position;
 use App\Models\Role;
 use App\Traits\RequestTrait;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
@@ -29,7 +31,7 @@ class UserController extends Controller
     {
         $this->authorize('isAdmin', User::class);
 
-        $users = User::where('id', '<>', auth()->id())->with('business','position')->get();
+        $users = User::where('id', '<>', auth()->id())->where('state','<>',0)->with('business','position')->get();
 
         return Inertia::render('Users/Index', [
             'users' => $users
@@ -135,12 +137,12 @@ class UserController extends Controller
     {
         $auth = Auth::user();
 
-        if (Hash::check($request->password, $auth->password)) {
-            $user->delete();
+        if (Hash::check($request->password, $auth->getAuthPassword())) {
+            $user->state = false;
+            $user->save();
             $this->flashSuccess("El usuario ha sido eliminado");
             return redirect()->route('user.index');
         }
         
-        return back()->withErrors(new MessageBag(['password' => ['Credenciales incorrectas']]));
     }
 }

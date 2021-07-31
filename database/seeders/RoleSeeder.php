@@ -18,7 +18,7 @@ class RoleSeeder extends Seeder
             'description' => 'ADMINSITRADOR'
         ]);
         Role::create([
-            'description' => 'SANABRIA & ASOCIADOS'
+            'description' => 'TRABAJADOR'
         ]);
         Role::create([
             'description' => 'TRABAJADOR CLIENTE'

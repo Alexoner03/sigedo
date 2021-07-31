@@ -8,8 +8,10 @@ use App\Models\Position;
 use App\Models\User;
 use App\Traits\RequestTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
 
 class BusinessController extends Controller
@@ -23,9 +25,10 @@ class BusinessController extends Controller
     public function index()
     {
         $this->authorize('isAdmin', User::class);
+        $business = Business::where('id','<>',1)->where('state','<>',0)->with('heading')->get();
 
         return Inertia::render('Business/Index', [
-            'businesses' => Business::with('headings')->get()
+            'businesses' => $business
         ]);
     }
 
@@ -52,11 +55,11 @@ class BusinessController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'business_name' => ['required', 'string', 'max:255'],
-            'ruc' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'address' => ['required', 'numeric', 'exists:roles,id'],
-            'contact_number' => ['required', 'numeric', 'exists:positions,id'],
-            'heading_id' => ['required', 'numeric', 'exists:businesses,id'],
+            'business_name' => 'required|unique:businesses,id|string|max:255',
+            'ruc'           => 'required|regex:/^[0-9]{11}+$/|unique:businesses,ruc',
+            'address'       => 'required|string|max:255',
+            'contact_number'=> 'required|numeric|regex:/^9[0-9]{8}+$/',
+            'heading_id'    => 'required|numeric',
         ]);
 
         Business::create($fields);
@@ -67,17 +70,6 @@ class BusinessController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Business  $business
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Business $business)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Business  $business
@@ -85,7 +77,10 @@ class BusinessController extends Controller
      */
     public function edit(Business $business)
     {
-        //
+        return Inertia::render('Business/Edit',[
+            'business' => $business,
+            'headings' => Heading::all(),
+        ]);
     }
 
     /**
@@ -97,7 +92,19 @@ class BusinessController extends Controller
      */
     public function update(Request $request, Business $business)
     {
-        //
+        $fields = $request->validate([
+            'business_name' => "required|unique:businesses,id,{$business->id}|string|max:255",
+            'address'       => 'required|string|max:255',
+            'contact_number'=> 'required|numeric|regex:/^9[0-9]{8}+$/',
+            'heading_id'    => 'required|numeric',
+        ]);
+
+
+        $business->update($fields);
+
+        $this->flashSuccess("Empresa actualizada correctamente");
+
+        return redirect()->route('business.index');
     }
 
     /**
@@ -106,9 +113,17 @@ class BusinessController extends Controller
      * @param  \App\Models\Business  $business
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Business $business)
+    public function destroy(Request $request,Business $business)
     {
-        //
+        $auth = Auth::user();
+
+        if (Hash::check($request->password, $auth->password)) {
+            $business->update(['state' => false]);
+            $this->flashSuccess("El cliente ha sido eliminado");
+            return redirect()->route('business.index');
+        }
+        
+        return back()->withErrors(new MessageBag(['password' => ['Credenciales incorrectas']]));
     }
 
     public function getEmployeeByBusinessAndPosition(Business $business, Position $position)
@@ -118,6 +133,7 @@ class BusinessController extends Controller
         $employees = User::where('business_id',$business->id)
                          ->where('position_id',$position->id)
                          ->where('id','<>',$user->id)
+                         ->where('state','<>',0)
                          ->orderBy('name','ASC')
                          ->with('position')
                          ->get();

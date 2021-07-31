@@ -25,8 +25,8 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name,
-            'dni' => $this->faker->numerify('########'),
+            'name' => 'Administrador',
+            'dni' => '00000000',
             'email' => $this->faker->unique()->email,
             'email_verified_at' => now(),
             'role_id' => 1,
