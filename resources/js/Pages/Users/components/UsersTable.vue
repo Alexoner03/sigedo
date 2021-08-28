@@ -18,7 +18,7 @@ export default {
             required: true,
         },
     },
-    emits: ["onDelete"],
+    emits: ["onDelete","onRestore"],
     setup(props, { emit }) {
         const grid = ref(null);
         const wrapper = ref(null);
@@ -70,10 +70,21 @@ export default {
                         data: (row) => row.created_at,
                     },
                     {
+                        id: "dni",
+                        name: "DNI",
+                        data: (row) => row.dni,
+                    },
+                    {
                         id: "is_admin",
                         name: "Rol",
                         data: (row) => row.role.description,
                         formatter: (cell) => cell.toUpperCase(),
+                    },
+                    {
+                        id: "is_active",
+                        name: "Estado",
+                        data: (row) => row.state,
+                        formatter: (cell) => !!cell ? 'ACTIVO' : 'INACTIVO',
                     },
                     {
                         name: "Acciones",
@@ -88,7 +99,8 @@ export default {
                                     },
                                     "Editar"
                                 ),
-                                h(
+                                !!row.cell(9).data
+                                ? h(
                                     "button",
                                     {
                                         onClick: () =>
@@ -96,8 +108,18 @@ export default {
                                         className:
                                             "inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-200 active:bg-red-600 disabled:opacity-25 transition",
                                     },
-                                    "Eliminar"
-                                ),
+                                    "Dar de baja"
+                                )
+                                : h(
+                                    "button",
+                                    {
+                                        onClick: () =>
+                                            sendRestore(row.cell(0).data),
+                                        className:
+                                            "inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:outline-none focus:border-green-700 focus:ring focus:ring-green-200 active:bg-green-600 disabled:opacity-25 transition",
+                                    },
+                                    "Restaurar"
+                                )
                             ];
                         },
                     },
@@ -123,6 +145,10 @@ export default {
 
         const sendDelete = (idUser) => {
             emit("onDelete", idUser);
+        };
+
+        const sendRestore = (idUser) => {
+            emit("onRestore", idUser);
         };
 
         const toEdit = (idUser) => {

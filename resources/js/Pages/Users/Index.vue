@@ -38,6 +38,7 @@
                 <users-table
                     :users="users"
                     @onDelete="confirmUserDeletion"
+                    @onRestore="confirmUserRestore"
                     :key="reloadTable"
                 />
                 <!-- Eliminar Cuenta Confirmation Modal -->
@@ -81,6 +82,49 @@
                         </jet-danger-button>
                     </template>
                 </jet-dialog-modal>
+
+
+                <!-- Restaurar Cuenta Confirmation Modal -->
+                <jet-dialog-modal
+                    :show="confirmingUserRestore"
+                    @close="closeModal"
+                >
+                    <template #title> Restaurar Cuenta </template>
+
+                    <template #content>
+                        ¿Estás seguro de que deseas restaurar esta cuenta?
+                        <div class="mt-4">
+                            <jet-input
+                                type="password"
+                                class="mt-1 block w-3/4"
+                                placeholder="Password"
+                                ref="password"
+                                v-model="form.password"
+                                @keyup.enter="restoreUser"
+                            />
+
+                            <jet-input-error
+                                :message="form.errors.password"
+                                class="mt-2"
+                            />
+                        </div>
+                    </template>
+
+                    <template #footer>
+                        <jet-secondary-button @click="closeModal">
+                            Cancelar
+                        </jet-secondary-button>
+
+                        <jet-danger-button
+                            class="ml-2"
+                            @click="restoreUser"
+                            :class="{ 'opacity-25': form.processing }"
+                            :disabled="form.processing"
+                        >
+                            Restaurar Cuenta
+                        </jet-danger-button>
+                    </template>
+                </jet-dialog-modal>
             </div>
         </div>
     </app-layout>
@@ -114,6 +158,7 @@ export default {
     setup() {
         const state = reactive({
             confirmingUserDeletion: false,
+            confirmingUserRestore: false,
             userSelected: -1,
             reloadTable: 0,
 
@@ -127,8 +172,12 @@ export default {
         const confirmUserDeletion = (user) => {
             state.userSelected = user;
             state.confirmingUserDeletion = true;
+        }
 
-            setTimeout(() => password.value.focus(), 250);
+        const confirmUserRestore = (user) => {
+            state.userSelected = user;
+            state.confirmingUserRestore = true;
+
         };
 
         const deleteUser = () => {
@@ -137,7 +186,20 @@ export default {
                 {
                     preserveScroll: true,
                     onSuccess: () => closeModal(),
-                    onError: () => password.value.focus(),
+                    onFinish: () => {
+                        state.form.reset();
+                        state.reloadTable++;
+                    },
+                }
+            );
+        };
+
+        const restoreUser = () => {
+            state.form.patch(
+                route("user.restore", { user: state.userSelected }),
+                {
+                    preserveScroll: true,
+                    onSuccess: () => closeModal(),
                     onFinish: () => {
                         state.form.reset();
                         state.reloadTable++;
@@ -148,6 +210,7 @@ export default {
 
         const closeModal = () => {
             state.confirmingUserDeletion = false;
+            state.confirmingUserRestore = false;
             state.form.reset();
         };
 
@@ -156,7 +219,9 @@ export default {
             password,
 
             confirmUserDeletion,
+            confirmUserRestore,
             deleteUser,
+            restoreUser,
             closeModal,
         };
     },

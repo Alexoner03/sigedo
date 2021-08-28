@@ -26,6 +26,19 @@
                                 />
                             </div>
 
+                            <div>
+                                <jet-label for="dni" value="Dni" />
+                                <jet-input
+                                    id="dni"
+                                    type="number"
+                                    class="mt-1 block w-full"
+                                    v-model="form.dni"
+                                    required
+                                    autofocus
+                                    autocomplete="dni"
+                                />
+                            </div>
+
                             <div class="mt-4">
                                 <jet-label
                                     for="email"
@@ -202,6 +215,7 @@ export default {
                 role_id: props.user.role_id,
                 position_id: props.user.position_id,
                 business_id: props.user.business_id,
+                dni : props.user.dni
             }),
         });
 

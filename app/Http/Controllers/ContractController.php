@@ -44,7 +44,7 @@ class ContractController extends Controller
     {
         $user = auth()->user();
 
-        $businesses = $user->role_id === 3
+        $businesses = $user->role_id == 3
             ? Business::whereIn('id', [1, $user->business_id])->orderBy('business_name', 'ASC')->get()
             : Business::orderBy('business_name', 'ASC')->get();
 
@@ -63,12 +63,14 @@ class ContractController extends Controller
             "files.*" => 'file',
             "reviewers" => 'required|array|min:1',
             "reviewers.*" => 'numeric|exists:users,id',
-            "business_id" => 'numeric|exists:businesses,id'
-        ],);
+            "business_id" => 'numeric|required|min:0'
+        ]);
+
+        $user = auth()->user();
 
         $workers = array_filter($fields['reviewers'], function ($reviewer_id, $index) {
             $reviewer = User::find($reviewer_id);
-            return $reviewer->business_id === 1;
+            return $reviewer->business_id == 1;
         }, ARRAY_FILTER_USE_BOTH);
 
         if (count($workers) < 1) {
@@ -82,7 +84,7 @@ class ContractController extends Controller
             'request_date' => $date->now(),
             'id_user_assigned' => $fields['reviewers'][0],
             'id_user_creator' => $creator->id,
-            'business_id' => $fields['business_id'],
+            'business_id' => $fields['business_id'] == 0 ? $user->business_id : $fields['business_id']
         ]);
 
         $contract->code = "{$date->year}{$fields['business_id']}{$contract->id}";
@@ -101,7 +103,7 @@ class ContractController extends Controller
                 Document::create([
                     'path' => substr($path, 7),
                     'file_name' => $file->getClientOriginalName(),
-                    'is_main' => $key === 0 ? true : false,
+                    'is_main' => $key == 0 ? true : false,
                     'contract_id' => $contract->id,
                 ]);
             }
@@ -112,7 +114,7 @@ class ContractController extends Controller
 
             $user = User::find($reviewer);
 
-            if ($key === 0) //enviar mail al primer revisor
+            if ($key == 0) //enviar mail al primer revisor
             {
                 Mail::to($user->email)->queue(new Message($user, $contract, 'new'));
             }
@@ -134,7 +136,7 @@ class ContractController extends Controller
 
     public function review(Contract $contract)
     {
-        if (auth()->user()->id !== $contract->id_user_assigned) {
+        if (auth()->user()->id != $contract->id_user_assigned) {
             $this->flashError("Usted no está asignado para revisar ese documento");
             return redirect()->route('contract.welcome');
         }
@@ -148,7 +150,7 @@ class ContractController extends Controller
 
     public function updateReview(Request $request, Contract $contract)
     {
-        if (auth()->user()->id !== $contract->id_user_assigned) {
+        if (auth()->user()->id != $contract->id_user_assigned) {
             $this->flashError("Usted no está asignado para revisar ese documento");
             return redirect()->route('contract.welcome');
         }
@@ -221,7 +223,7 @@ class ContractController extends Controller
 
     public function correct(Contract $contract)
     {
-        if (auth()->user()->id !== $contract->id_user_creator) {
+        if (auth()->user()->id != $contract->id_user_creator) {
             $this->flashError("Usted no está asignado para corregir ese documento");
             return redirect()->route('contract.welcome');
         }
@@ -235,7 +237,7 @@ class ContractController extends Controller
 
     public function updateCorrect(Request $request, Contract $contract)
     {
-        if (auth()->user()->id !== $contract->id_user_creator) {
+        if (auth()->user()->id != $contract->id_user_creator) {
             $this->flashError("Usted no está asignado para corregir ese documento");
             return redirect()->route('contract.welcome');
         }
@@ -250,7 +252,7 @@ class ContractController extends Controller
 
         foreach ($contract->users as $key => $user) {
 
-            if ($user->pivot->check === 0) {
+            if ($user->pivot->check == 0) {
                 $keyOfLastUserCheck = $key;
                 break;
             }
@@ -265,7 +267,7 @@ class ContractController extends Controller
 
 
         foreach ($contract->documents as $document) {
-            if ($document->is_main === 1) {
+            if ($document->is_main == 1) {
                 Storage::delete("public/{$document->path}");
                 $_path = $request->file('file')->store('public/documents');
                 $document->path = substr($_path, 7);
@@ -287,7 +289,7 @@ class ContractController extends Controller
 
     public function finalize(Contract $contract)
     {
-        if (auth()->user()->business_id !== 1) {
+        if (auth()->user()->business_id != 1) {
             $this->flashError("Usted no pertenece a sanabria y asociados");
             return redirect()->route('contract.welcome');
         }
@@ -306,7 +308,7 @@ class ContractController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->business_id !== 1) {
+        if ($user->business_id != 1) {
             $this->flashError("Usted no pertenece a sanabria y asociados");
             return redirect()->route('contract.welcome');
         }
@@ -337,7 +339,7 @@ class ContractController extends Controller
     {
         $_user = auth()->user();
 
-        if ($_user->business_id !== 1) {
+        if ($_user->business_id != 1) {
             $this->flashError("Usted no pertenece a sanabria y asociados");
             return redirect()->route('contract.welcome');
         }

@@ -5,6 +5,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ContractController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 
 /*
@@ -22,6 +23,16 @@ Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
     ]);
+});
+
+Route::get('/clear-cache', function() {
+    $exitCode = Artisan::call('cache:clear');
+    // return what you want
+});
+
+Route::get('/create-symlink', function() {
+    $exitCode = Artisan::call('storage:link');
+    return $exitCode;
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -42,7 +53,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/businees/{business}/position/{position}/get-employees',[BusinessController::class,'getEmployeeByBusinessAndPosition'])->name('business.position.users');
     Route::resource('business', BusinessController::class);
 
+
+
     #Usuarios
+    Route::patch('/user/{user}/restore',[UserController::class,"restore"])->name('user.restore');
     Route::resource('/user', UserController::class)->except(['show']);
 
 });
