@@ -10,12 +10,17 @@
             <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
                 <validation-errors/>
 
+
                 <div class="w-full flex justify-between flex-wrap">
+                    <div class="w-full p-4">
+                        <small>*Siempre debe existir un revisor de sanabria y asociados</small>
+                    </div>
+
 
                     <div class="w-full p-4">
                         <p class="mb-2">Selecciona una empresa</p>
 
-                        <select name="business" @change="getEmployees" v-model="selectedBusiness"
+                        <select @change="getEmployees" v-model="selectedBusiness"
                                 class="form-select w-full bg-transparent rounded focus:border-secondary focus:ring focus:ring-secondary focus:ring-opacity-50 uppercase">
                             <option :value="businees" v-for="(businees, index) in businesses" :key="index">
                                 {{ businees.business_name }}
@@ -27,7 +32,7 @@
                     <div class="w-full p-4">
                         <p class="mb-2">Selecciona un Area</p>
 
-                        <select name="position" @change="getEmployees" v-model="selectedPosition"
+                        <select @change="getEmployees2" v-model="selectedPosition"
                                 class="form-select w-full bg-transparent rounded focus:border-secondary focus:ring focus:ring-secondary focus:ring-opacity-50 uppercase">
                             <option :value="position" v-for="(position, index) in filterPositions" :key="index">
                                 {{ position.description }}
@@ -67,10 +72,10 @@
 
                     <div class="w-full p-4 mb-4" v-if="$page.props.user.business_id === 1">
                         <h2 class="text-center mb-4 font-light text-4xl text-secondary leading-tight">
-                            Empresa Enlazada al contrato
+                            Empresa enlazada al contrato
                         </h2>
 
-                        <small>usted es un trabajador de Estudio Sanabria, por lo tanto debe seleccionar una empresa enlazada al contrato.</small>
+                        <small>Usted es un miembro de Sanabria & Asociados, por lo tanto debe seleccionar una empresa enlazada al contrato.</small>
 
                         <p class="my-2">Selecciona una empresa</p>
 
@@ -173,10 +178,11 @@ export default {
             if(businness_id === 1 )
             {
                 filterPositions.value = props.positions;
-            }else{
+            }
+            else
+            {
                 filterPositions.value = props.positions.filter(p => p.id !== 1)
                 selectedPosition.value = props.positions[1]
-
             }
 
         }
@@ -205,6 +211,16 @@ export default {
 
         const getEmployees = async () => {
             filteringPositions(selectedBusiness.value.id)
+            const raw = await fetch(route('business.position.users', {
+                business: selectedBusiness.value.id,
+                position: selectedPosition.value.id
+            }))
+            const response = await raw.json()
+            employees.value = response
+            selectedEmployee.value = employees.value[0]
+        }
+
+        const getEmployees2 = async () => {
             const raw = await fetch(route('business.position.users', {
                 business: selectedBusiness.value.id,
                 position: selectedPosition.value.id
@@ -269,6 +285,7 @@ export default {
             filterPositions,
             filteringPositions,
             businessesContract,
+            getEmployees2,
 
             getEmployees,
             addReviewer,

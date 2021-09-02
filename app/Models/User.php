@@ -53,7 +53,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'created_at' => 'datetime:d-m-Y',
-        'is_admin' => 'boolean'
+        'is_admin' => 'boolean',
+        'role_id' => 'integer',
+        'business_id' => 'integer',
+        'position_id' => 'integer'
     ];
 
     /**

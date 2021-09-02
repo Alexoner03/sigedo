@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -104,7 +105,7 @@ class UserController extends Controller
             'name' => 'string|required|min:3',
             'email' => 'email|required|unique:users,email,' . $user->id,
             'role_id' => ['required', 'numeric', 'exists:roles,id'],
-            'dni' => "required|numeric|regex:/^[0-9]{8}+$/|unique:users,dni,{$user->dni}",
+            'dni' => [ "required", "numeric", "regex:/^[0-9]{8}+$/",  Rule::unique('users')->ignore($user->dni, "dni")],
             'position_id' => ['required', 'numeric', 'exists:positions,id'],
             'business_id' => ['required', 'numeric', 'exists:businesses,id'],
         ]);

@@ -36,7 +36,7 @@ class Contract extends Model
     {
         return $this->hasMany(Record::class);
     }
-    
+
     public function documents()
     {
         return $this->hasMany(Document::class);
@@ -51,6 +51,10 @@ class Contract extends Model
         'created_at' => 'datetime:d-m-Y',
         'request_date' => 'datetime:d-m-Y',
         'term_date' => 'datetime:d-m-Y',
+        'id_user_assigned' => 'integer',
+        'id_user_creator' => 'integer',
+        'business_id' => 'integer',
+        'contract_type_id' => 'integer',
     ];
-    
+
 }

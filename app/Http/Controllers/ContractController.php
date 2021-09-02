@@ -26,7 +26,6 @@ class ContractController extends Controller
     public function index()
     {
         $user = auth()->user();
-
         $contracts = Contract::with('users', 'users.position', 'users.business', 'documents', 'records', 'userCreator', 'userAssigned', 'business', 'contract_type')
             ->where('id_user_creator', $user->id)
             ->orWhereHas('users', function ($query) use ($user) {
@@ -263,7 +262,7 @@ class ContractController extends Controller
         //devolviendo al ultimo revisor sin check
         $contract->id_user_assigned = $lastUserCheck->id;
 
-        Mail::to($lastUserCheck->email)->queue(new Message($lastUserCheck, $contract,'review'));
+        Mail::to($lastUserCheck->email)->queue(new Message($lastUserCheck, $contract,'new'));
 
 
         foreach ($contract->documents as $document) {

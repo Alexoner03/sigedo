@@ -54,44 +54,9 @@
                             </div>
 
                             <div class="mt-4">
-                                <jet-label
-                                    for="role_id"
-                                    value="Rol de Usuario"
-                                />
-                                <select
-                                    name="role_id"
-                                    id="role_id"
-                                    required
-                                    v-model="form.role_id"
-                                    class="
-                                        mt-1
-                                        block
-                                        w-full
-                                        border-metalgray
-                                        bg-transparent
-                                        focus:border-secondary
-                                        focus:ring
-                                        focus:ring-secondary
-                                        focus:ring-opacity-50
-                                        rounded-md
-                                        shadow-sm
-                                        capitalize
-                                    "
-                                >
-                                    <option
-                                        v-for="(role, index) in roles"
-                                        :key="index"
-                                        :value="role.id"
-                                        :selected="user.role_id === role.id"
-                                    >
-                                        {{ role.description }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="mt-4">
                                 <jet-label for="business_id" value="Empresa" />
                                 <select
+                                    @change="filteringRoles"
                                     name="business_id"
                                     id="business_id"
                                     required
@@ -120,6 +85,44 @@
                                     </option>
                                 </select>
                             </div>
+
+                            <div class="mt-4">
+                                <jet-label
+                                    for="role_id"
+                                    value="Rol de Usuario"
+                                />
+                                <select
+                                    name="role_id"
+                                    id="role_id"
+                                    required
+                                    v-model="form.role_id"
+                                    class="
+                                        mt-1
+                                        block
+                                        w-full
+                                        border-metalgray
+                                        bg-transparent
+                                        focus:border-secondary
+                                        focus:ring
+                                        focus:ring-secondary
+                                        focus:ring-opacity-50
+                                        rounded-md
+                                        shadow-sm
+                                        capitalize
+                                    "
+                                >
+                                    <option
+                                        v-for="(role, index) in filteredRoles"
+                                        :key="index"
+                                        :value="role.id"
+                                        :selected="user.role_id === role.id"
+                                    >
+                                        {{ role.description }}
+                                    </option>
+                                </select>
+                            </div>
+
+
                             <div class="mt-4">
                                 <jet-label for="position_id" value="Cargo" />
                                 <select
@@ -143,7 +146,7 @@
                                     "
                                 >
                                     <option
-                                        v-for="(position, index) in positions"
+                                        v-for="(position, index) in filterPositions"
                                         :key="index"
                                         :value="position.id"
                                     >
@@ -186,7 +189,7 @@ import JetInput from "@/Jetstream/Input";
 import JetCheckbox from "@/Jetstream/Checkbox";
 import JetLabel from "@/Jetstream/Label";
 import JetValidationErrors from "@/Jetstream/ValidationErrors";
-import { reactive, toRefs } from "vue";
+import {reactive, ref, toRefs} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 export default {
@@ -215,21 +218,46 @@ export default {
                 role_id: props.user.role_id,
                 position_id: props.user.position_id,
                 business_id: props.user.business_id,
-                dni : props.user.dni
+                dni: props.user.dni
             }),
         });
 
+        const filteredRoles = ref(props.roles.filter(p => p.id !== 3))
+        const filterPositions = ref(props.positions)
+
+
+        const filteringRoles = () => {
+            if (state.form.business_id === 1) {
+                filteredRoles.value = props.roles.filter(p => p.id !== 3);
+                state.form.role_id = 1
+                filterPositions.value = props.positions;
+                state.form.position_id = 1
+            } else {
+                filteredRoles.value = props.roles.filter(p => p.id === 3);
+                state.form.role_id = 3
+
+                filterPositions.value = props.positions.filter(p => p.id !== 1)
+                state.form.position_id = props.positions[1].id
+            }
+
+        }
+
         const submit = () => {
-            state.form.put(route("user.update", { user: props.user }));
+            state.form.put(route("user.update", {user: props.user}));
         };
         const back = () => {
             Inertia.visit(route("user.index"));
         };
 
+        filteringRoles()
+
         return {
             ...toRefs(state),
             submit,
             back,
+            filteredRoles,
+            filterPositions,
+            filteringRoles,
         };
     },
 };

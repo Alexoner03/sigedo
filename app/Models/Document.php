@@ -19,5 +19,6 @@ class Document extends Model
     protected $casts = [
         'created_at' => 'date:d-m-Y',
         'updated_at' => 'date:d-m-Y',
+        'contract_id' => 'integer'
     ];
 }
