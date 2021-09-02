@@ -56,7 +56,8 @@ class User extends Authenticatable
         'is_admin' => 'boolean',
         'role_id' => 'integer',
         'business_id' => 'integer',
-        'position_id' => 'integer'
+        'position_id' => 'integer',
+        'state' => 'integer'
     ];
 
     /**

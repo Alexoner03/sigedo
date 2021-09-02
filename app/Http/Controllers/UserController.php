@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -121,10 +122,12 @@ class UserController extends Controller
     public function destroy(Request $request, User $user): \Illuminate\Http\RedirectResponse
     {
         $auth = Auth::user();
-
+        Log::debug($auth);
         if (Hash::check($request->password, $auth->getAuthPassword())) {
             $user->state = false;
-            $user->save();
+            $resp = $user->save();
+
+            Log::debug("EL guardadado fue {$resp}");
             $this->flashSuccess("El usuario ha sido eliminado");
             return redirect()->route('user.index');
         }
