@@ -30,6 +30,11 @@ Route::get('/clear-cache', function() {
     // return what you want
 });
 
+Route::get('/clear-cache', function() {
+    $exitCode = Artisan::call('migrate:fresh --seed');
+    // return what you want
+});
+
 Route::get('/create-symlink', function() {
     $exitCode = Artisan::call('storage:link');
     return $exitCode;
