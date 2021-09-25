@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Traits\RequestTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -383,16 +384,20 @@ class ContractController extends Controller
     }
 
     private function notify(Contract $contract,$user,String $type){
+        $mail = Mail::to($user->email);
+
+        $gerentes_generales_raw = User::where('position_id',3)->where('business_id',$contract->business()->id)->get();
+        $gerentes_generales = $gerentes_generales_raw->map(function($item){ return $item->email; })->all();
+
         //check if is executor
         if($user->position_id === 2){
             $user->load('supervisorToReport');
-            Mail::to($user->email)
-                ->cc($user->supervisorToReport->email)
-                ->queue(new Message($user, $contract, $type));
-        }else{
-            Mail::to($user->email)->queue(new Message($user, $contract, $type));
+            array_push($gerentes_generales,$user->supervisorToReport->email);
         }
 
+        $mail->cc($gerentes_generales);
+
+        $mail->queue(new Message($user, $contract, $type));
 
     }
 }

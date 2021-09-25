@@ -30,7 +30,7 @@ Route::get('/clear-cache', function() {
     // return what you want
 });
 
-Route::get('/clear-cache', function() {
+Route::get('/migrate', function() {
     $exitCode = Artisan::call('migrate:fresh --seed');
     // return what you want
 });
