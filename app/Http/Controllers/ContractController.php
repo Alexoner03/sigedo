@@ -385,8 +385,8 @@ class ContractController extends Controller
 
     private function notify(Contract $contract,$user,String $type){
         $mail = Mail::to($user->email);
-
-        $gerentes_generales_raw = User::where('position_id',3)->where('business_id',$contract->business()->id)->get();
+        $contract->load('business');
+        $gerentes_generales_raw = User::where('position_id',3)->where('business_id',$contract->business->id)->get();
         $gerentes_generales = $gerentes_generales_raw->map(function($item){ return $item->email; })->all();
 
         //check if is executor
