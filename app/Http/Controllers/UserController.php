@@ -31,7 +31,7 @@ class UserController extends Controller
     {
         $this->authorize('isAdmin', User::class);
 
-        $users = User::where('id', '<>', auth()->id())->with('business','position')->get();
+        $users = User::where('id', '<>', auth()->id())->with('business','position','supervisorToReport')->get();
 
         return Inertia::render('Users/Index', [
             'users' => $users
@@ -50,6 +50,7 @@ class UserController extends Controller
             'roles' => Role::all(),
             'businesses' => Business::all(),
             'positions' => Position::all(),
+            'supervisors' => User::where('position_id',1)->get(),
         ]);
     }
 
@@ -65,10 +66,11 @@ class UserController extends Controller
             'role_id' => ['required', 'numeric', 'exists:roles,id'],
             'position_id' => ['required', 'numeric', 'exists:positions,id'],
             'business_id' => ['required', 'numeric', 'exists:businesses,id'],
+            'supervisor_to_report' => ['required','numeric','exists:users,id'],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        User::create([
+        $new_user = [
             'name' => $request->name,
             'email' => $request->email,
             'role_id' => $request->role_id,
@@ -76,7 +78,13 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'position_id' => $request->position_id,
             'business_id' => $request->business_id,
-        ]);
+        ];
+
+        if($request->position_id === 2){
+            $new_user['supervisor_to_report'] = $request->supervisor_to_report;
+        }
+
+        User::create($new_user);
 
         $this->flashSuccess("Usuario creado correctamente");
 

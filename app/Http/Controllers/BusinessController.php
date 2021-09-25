@@ -17,10 +17,12 @@ use Inertia\Inertia;
 class BusinessController extends Controller
 {
     use RequestTrait;
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function index()
     {
@@ -35,7 +37,8 @@ class BusinessController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function create()
     {
@@ -50,7 +53,7 @@ class BusinessController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -73,7 +76,7 @@ class BusinessController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Business  $business
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function edit(Business $business)
     {
@@ -88,7 +91,7 @@ class BusinessController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Business  $business
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Business $business)
     {
@@ -111,9 +114,9 @@ class BusinessController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\Business  $business
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Request $request,Business $business)
+    public function destroy(Request $request,Business $business): \Illuminate\Http\RedirectResponse
     {
         $auth = Auth::user();
 
@@ -122,11 +125,11 @@ class BusinessController extends Controller
             $this->flashSuccess("El cliente ha sido eliminado");
             return redirect()->route('business.index');
         }
-        
+
         return back()->withErrors(new MessageBag(['password' => ['Credenciales incorrectas']]));
     }
 
-    public function getEmployeeByBusinessAndPosition(Business $business, Position $position)
+    public function getEmployeeByBusinessAndPosition(Business $business, Position $position): \Illuminate\Http\JsonResponse
     {
 
         $user = auth()->user();

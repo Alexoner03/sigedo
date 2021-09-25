@@ -26,10 +26,21 @@ class ContractController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $contracts = Contract::with('users', 'users.position', 'users.business', 'documents', 'records', 'userCreator', 'userAssigned', 'business', 'contract_type')
+        $slaves_raw = User::where('supervisor_to_report',$user->id)->get();
+        $slaves = $slaves_raw->map(function (User $_user){
+            return $_user->id;
+        })->all();
+
+        debug($slaves);
+
+        $contracts = Contract::
+            with('users', 'users.position', 'users.business', 'documents', 'records', 'userCreator', 'userAssigned', 'business', 'contract_type')
             ->where('id_user_creator', $user->id)
             ->orWhereHas('users', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
+            })
+            ->orWhereHas('users', function ($query) use ($slaves) {
+                $query->whereIn('user_id', $slaves);
             })
             ->orderBy('created_at', 'DESC')
             ->get();
@@ -44,10 +55,12 @@ class ContractController extends Controller
         $user = auth()->user();
 
         $businesses = $user->role_id == 3
-            ? Business::whereIn('id', [1, $user->business_id])->orderBy('business_name', 'ASC')->get()
+            ? Business::where('id', 1)->get()
             : Business::orderBy('business_name', 'ASC')->get();
 
-        $positions = Position::all();
+        $positions = $user->role_id == 3
+            ? Position::whereIn('id',[1,2])->get()
+            : Position::all();
 
         return Inertia::render('Contract/Create', [
             'businesses' => $businesses,
@@ -67,22 +80,12 @@ class ContractController extends Controller
 
         $user = auth()->user();
 
-        $workers = array_filter($fields['reviewers'], function ($reviewer_id, $index) {
-            $reviewer = User::find($reviewer_id);
-            return $reviewer->business_id == 1;
-        }, ARRAY_FILTER_USE_BOTH);
-
-        if (count($workers) < 1) {
-            return redirect()->back()->withErrors(new MessageBag(['reviewers' => ['La lista de revisores debe incluir a alguien de SANABRIA & ASOCIADOS']]));
-        }
-
-        $creator = auth()->user();
         $date = new Carbon();
 
         $contract = Contract::create([
             'request_date' => $date->now(),
             'id_user_assigned' => $fields['reviewers'][0],
-            'id_user_creator' => $creator->id,
+            'id_user_creator' => $user->id,
             'business_id' => $fields['business_id'] == 0 ? $user->business_id : $fields['business_id']
         ]);
 
@@ -115,7 +118,8 @@ class ContractController extends Controller
 
             if ($key == 0) //enviar mail al primer revisor
             {
-                Mail::to($user->email)->queue(new Message($user, $contract, 'new'));
+//                Mail::to($user->email)->queue(new Message($user, $contract, 'new'));
+                $this->notify($contract,$user,'new');
             }
 
             $contract->users()->attach($user);
@@ -149,7 +153,9 @@ class ContractController extends Controller
 
     public function updateReview(Request $request, Contract $contract)
     {
-        if (auth()->user()->id != $contract->id_user_assigned) {
+        $user = auth()->user();
+
+        if ($user->id != $contract->id_user_assigned) {
             $this->flashError("Usted no está asignado para revisar ese documento");
             return redirect()->route('contract.welcome');
         }
@@ -164,7 +170,8 @@ class ContractController extends Controller
         if ($fields["obs"]) {
 
 
-            Mail::to($creator->email)->queue(new Message($creator, $contract,'observe'));
+//            Mail::to($creator->email)->queue(new Message($creator, $contract,'observe'));
+            $this->notify($contract, $creator,'observe');
 
             $contract->userAssigned->contracts()->updateExistingPivot($contract->id, ["observations" => $fields['message']]);
 
@@ -202,13 +209,16 @@ class ContractController extends Controller
                     'contract_id' => $contract->id,
                 ]);
 
-                Mail::to($creator->email)->queue(new Message($creator, $contract,'finish'));
+//                Mail::to($creator->email)->queue(new Message($creator, $contract,'finish'));
+                $this->notify($contract, $creator,'finish');
+
 
             } else {
                 $newReviewer = $contract->users[$keyOfUserAssigned + 1];
                 $contract->id_user_assigned = $newReviewer->id;
 
-                Mail::to($newReviewer->email)->queue(new Message($newReviewer, $contract, 'new'));
+//                Mail::to($newReviewer->email)->queue(new Message($newReviewer, $contract, 'new'));
+                $this->notify($contract, $newReviewer,'new');
 
             }
         }
@@ -262,7 +272,9 @@ class ContractController extends Controller
         //devolviendo al ultimo revisor sin check
         $contract->id_user_assigned = $lastUserCheck->id;
 
-        Mail::to($lastUserCheck->email)->queue(new Message($lastUserCheck, $contract,'new'));
+//        Mail::to($lastUserCheck->email)->queue(new Message($lastUserCheck, $contract,'new'));
+        $this->notify($contract, $lastUserCheck,'new');
+
 
 
         foreach ($contract->documents as $document) {
@@ -368,5 +380,19 @@ class ContractController extends Controller
         $this->flashSuccess("El contrato ha sido finalizado correctamente");
 
         return redirect()->route('contract.welcome');
+    }
+
+    private function notify(Contract $contract,$user,String $type){
+        //check if is executor
+        if($user->position_id === 2){
+            $user->load('supervisorToReport');
+            Mail::to($user->email)
+                ->cc($user->supervisorToReport->email)
+                ->queue(new Message($user, $contract, $type));
+        }else{
+            Mail::to($user->email)->queue(new Message($user, $contract, $type));
+        }
+
+
     }
 }

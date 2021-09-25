@@ -61,7 +61,7 @@ export default {
                     },
                     {
                         id: "cargo",
-                        name: "Cargo",
+                        name: "Área",
                         data: (row) => row.position.description,
                     },
                     {
@@ -85,6 +85,11 @@ export default {
                         name: "Estado",
                         data: (row) => row.state,
                         formatter: (cell) => !!cell ? 'ACTIVO' : 'INACTIVO',
+                    },
+                    {
+                        id: "supervisor",
+                        name: "Supervisor",
+                        data: (row) => row.supervisor_to_report?.name || 'No Aplica'
                     },
                     {
                         name: "Acciones",

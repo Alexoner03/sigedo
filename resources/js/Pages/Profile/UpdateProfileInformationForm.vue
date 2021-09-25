@@ -100,7 +100,7 @@
             <!-- Email -->
             <div class="col-span-6 sm:col-span-4">
                 <jet-label
-                    :value="`Cargo : ${$page.props.auth.position.description}`"
+                    :value="`Área : ${$page.props.auth.position.description}`"
                 />
             </div>
         </template>

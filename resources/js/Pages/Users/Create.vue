@@ -114,7 +114,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <jet-label for="position_id" value="Cargo" />
+                            <jet-label for="position_id" value="Área" />
                             <select
                                 name="position_id"
                                 id="position_id"
@@ -141,6 +141,37 @@
                                     :value="position.id"
                                 >
                                     {{ position.description }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mt-4" v-if="isExecutor">
+                            <jet-label for="supervisor_to_report_id" value="Supervisor a reportar" />
+                            <select
+                                name="supervisor_to_report_id"
+                                id="supervisor_to_report_id"
+                                v-model="form.supervisor_to_report"
+                                class="
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
+                            >
+                                <option
+                                    v-for="(supervisor, index) in supervisors"
+                                    :key="index"
+                                    :value="supervisor.id"
+                                >
+                                    {{ supervisor.name }}
                                 </option>
                             </select>
                         </div>
@@ -204,7 +235,7 @@ import JetInput from "@/Jetstream/Input";
 import JetButton from "@/Jetstream/Button";
 import JetLabel from "@/Jetstream/Label";
 import JetValidationErrors from "@/Jetstream/ValidationErrors";
-import { reactive, toRefs, ref } from "vue";
+import {reactive, toRefs, ref, watch} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 export default {
@@ -218,7 +249,8 @@ export default {
     props: {
         roles: Array,
         businesses : Array,
-        positions : Array
+        positions : Array,
+        supervisors : Array,
     },
     setup(props) {
         const state = reactive({
@@ -230,12 +262,13 @@ export default {
                 password_confirmation: "",
                 position_id : 1,
                 business_id : 1,
+                supervisor_to_report : 1,
                 dni : null
             }),
         });
-
+        const isExecutor = ref(false)
         const filteredRoles = ref(props.roles.filter(p => p.id !== 3))
-        const filterPositions = ref(props.positions)
+        const filterPositions = ref(props.positions.filter(p => [1,2].includes(p.id)))
 
         const filteringRoles = () =>
         {
@@ -243,16 +276,16 @@ export default {
             {
                 filteredRoles.value = props.roles.filter(p => p.id !== 3);
                 state.form.role_id = 1
-                filterPositions.value = props.positions;
+                filterPositions.value = props.positions.filter(p => [1,2].includes(p.id));
                 state.form.position_id = 1
-            }else{
+            }
+            else{
                 filteredRoles.value = props.roles.filter(p => p.id === 3);
                 state.form.role_id = 3
 
-                filterPositions.value = props.positions.filter(p => p.id !== 1)
-                state.form.position_id = props.positions[1].id
+                filterPositions.value = props.positions.filter(p => ![1,2].includes(p.id));
+                state.form.position_id = props.positions[2].id
             }
-
         }
 
         const submit = () => {
@@ -266,9 +299,17 @@ export default {
             Inertia.visit(route("user.index"));
         };
 
+        watch(
+            () => state.form.position_id,
+            (position) => {
+                isExecutor.value = position === 2
+            }
+        )
+
         return {
             filteredRoles,
             filterPositions,
+            isExecutor,
 
             ...toRefs(state),
             submit,

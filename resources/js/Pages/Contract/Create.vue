@@ -13,11 +13,6 @@
 
                 <div class="w-full flex justify-between flex-wrap">
                     <div class="w-full p-4">
-                        <small>*Siempre debe existir un revisor de sanabria y asociados</small>
-                    </div>
-
-
-                    <div class="w-full p-4">
                         <p class="mb-2">Selecciona una empresa</p>
 
                         <select @change="getEmployees" v-model="selectedBusiness"
@@ -177,12 +172,12 @@ export default {
         {
             if(businness_id === 1 )
             {
-                filterPositions.value = props.positions;
+                filterPositions.value = props.positions.filter(p => [1,2].includes(p.id));
             }
             else
             {
-                filterPositions.value = props.positions.filter(p => p.id !== 1)
-                selectedPosition.value = props.positions[1]
+                filterPositions.value = props.positions.filter(p => ![1,2].includes(p.id))
+                selectedPosition.value = props.positions[2]
             }
 
         }

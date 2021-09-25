@@ -31,6 +31,7 @@ class User extends Authenticatable
         'password',
         'position_id',
         'business_id',
+        'supervisor_to_report'
     ];
 
     /**
@@ -57,6 +58,7 @@ class User extends Authenticatable
         'role_id' => 'integer',
         'business_id' => 'integer',
         'position_id' => 'integer',
+        'supervisor_to_report' => 'integer',
         'state' => 'integer'
     ];
 
@@ -84,6 +86,11 @@ class User extends Authenticatable
     public function position()
     {
         return $this->belongsTo(Position::class);
+    }
+
+    public function supervisorToReport()
+    {
+        return $this->belongsTo(User::class,'supervisor_to_report','id');
     }
 
     public function contracts()

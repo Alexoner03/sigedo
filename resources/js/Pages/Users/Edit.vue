@@ -124,7 +124,7 @@
 
 
                             <div class="mt-4">
-                                <jet-label for="position_id" value="Cargo" />
+                                <jet-label for="position_id" value="Área" />
                                 <select
                                     name="position_id"
                                     id="position_id"

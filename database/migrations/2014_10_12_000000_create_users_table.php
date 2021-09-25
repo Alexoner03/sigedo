@@ -24,10 +24,12 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('role_id');
             $table->unsignedBigInteger('business_id');
             $table->unsignedBigInteger('position_id');
+            $table->unsignedBigInteger('supervisor_to_report')->nullable();
             $table->rememberToken();
             $table->foreign('role_id')->references('id')->on('roles');
             $table->foreign('business_id')->references('id')->on('businesses');
             $table->foreign('position_id')->references('id')->on('positions');
+            $table->foreign('supervisor_to_report')->references('id')->on('users');
             $table->text('profile_photo_path')->nullable();
             $table->timestamps();
         });
