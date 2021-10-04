@@ -15,8 +15,6 @@ class BusinessSeeder extends Seeder
      */
     public function run()
     {
-        $headings = Heading::all();
-
         Business::create([
             'business_name' => 'SANABRIA & ASOCIADOS',
             'ruc' => '12345678910',
@@ -24,11 +22,5 @@ class BusinessSeeder extends Seeder
             'contact_number' => '987654321',
             'heading_id' => 23
         ]);
-
-        // foreach ($headings as $heading) {
-        //     Business::factory(5)->create([
-        //         'heading_id' => $heading->id
-        //     ]);
-        // }
     }
 }

@@ -26,7 +26,7 @@
                                 />
                             </div>
 
-                            <div>
+                            <div class="mt-4">
                                 <jet-label for="dni" value="Dni" />
                                 <jet-input
                                     id="dni"
@@ -40,10 +40,7 @@
                             </div>
 
                             <div class="mt-4">
-                                <jet-label
-                                    for="email"
-                                    value="Correo Eléctronico"
-                                />
+                                <jet-label for="email" value="Correo Eléctronico" />
                                 <jet-input
                                     id="email"
                                     type="email"
@@ -56,25 +53,23 @@
                             <div class="mt-4">
                                 <jet-label for="business_id" value="Empresa" />
                                 <select
-                                    @change="filteringRoles"
-                                    name="business_id"
+                                    @change="filteringSupervisors"
                                     id="business_id"
-                                    required
                                     v-model="form.business_id"
                                     class="
-                                        mt-1
-                                        block
-                                        w-full
-                                        border-metalgray
-                                        bg-transparent
-                                        focus:border-secondary
-                                        focus:ring
-                                        focus:ring-secondary
-                                        focus:ring-opacity-50
-                                        rounded-md
-                                        shadow-sm
-                                        capitalize
-                                    "
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
                                 >
                                     <option
                                         v-for="(business, index) in businesses"
@@ -87,70 +82,92 @@
                             </div>
 
                             <div class="mt-4">
-                                <jet-label
-                                    for="role_id"
-                                    value="Rol de Usuario"
-                                />
+                                <jet-label for="role_id" value="Rol de Usuario" />
                                 <select
-                                    name="role_id"
                                     id="role_id"
-                                    required
                                     v-model="form.role_id"
                                     class="
-                                        mt-1
-                                        block
-                                        w-full
-                                        border-metalgray
-                                        bg-transparent
-                                        focus:border-secondary
-                                        focus:ring
-                                        focus:ring-secondary
-                                        focus:ring-opacity-50
-                                        rounded-md
-                                        shadow-sm
-                                        capitalize
-                                    "
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
                                 >
                                     <option
-                                        v-for="(role, index) in filteredRoles"
+                                        v-for="(role, index) in roles"
                                         :key="index"
                                         :value="role.id"
-                                        :selected="user.role_id === role.id"
                                     >
                                         {{ role.description }}
                                     </option>
                                 </select>
                             </div>
 
-
-                            <div class="mt-4">
+                            <div class="mt-4" v-if="form.business_id !== 1">
                                 <jet-label for="position_id" value="Área" />
                                 <select
-                                    name="position_id"
                                     id="position_id"
-                                    required
                                     v-model="form.position_id"
                                     class="
-                                        mt-1
-                                        block
-                                        w-full
-                                        border-metalgray
-                                        bg-transparent
-                                        focus:border-secondary
-                                        focus:ring
-                                        focus:ring-secondary
-                                        focus:ring-opacity-50
-                                        rounded-md
-                                        shadow-sm
-                                        capitalize
-                                    "
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
                                 >
                                     <option
-                                        v-for="(position, index) in filterPositions"
+                                        v-for="(position, index) in positions"
                                         :key="index"
                                         :value="position.id"
                                     >
                                         {{ position.description }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mt-4" v-if="form.role_id === 2">
+                                <jet-label for="supervisor_to_report_id" value="Supervisor a reportar" />
+                                <select
+                                    name="supervisor_to_report_id"
+                                    id="supervisor_to_report_id"
+                                    v-model="form.supervisor_to_report"
+                                    class="
+                                    mt-1
+                                    block
+                                    w-full
+                                    border-metalgray
+                                    bg-transparent
+                                    focus:border-secondary
+                                    focus:ring
+                                    focus:ring-secondary
+                                    focus:ring-opacity-50
+                                    rounded-md
+                                    shadow-sm
+                                    capitalize
+                                "
+                                >
+                                    <option
+                                        v-for="(supervisor, index) in filteredSupervisor"
+                                        :key="index"
+                                        :value="supervisor.id"
+                                    >
+                                        {{ supervisor.name }}
                                     </option>
                                 </select>
                             </div>
@@ -166,11 +183,12 @@
                                     Regresar
                                 </jet-button>
                                 <jet-button
+                                    type="submit"
                                     class="ml-4"
                                     :class="{ 'opacity-25': form.processing }"
                                     :disabled="form.processing"
                                 >
-                                    Actualizar Usuario
+                                    Registrar
                                 </jet-button>
                             </div>
                         </form>
@@ -207,6 +225,7 @@ export default {
         roles: Array,
         businesses: Array,
         positions: Array,
+        supervisors : Array,
     },
     setup(props) {
         const state = reactive({
@@ -218,29 +237,10 @@ export default {
                 role_id: props.user.role_id,
                 position_id: props.user.position_id,
                 business_id: props.user.business_id,
-                dni: props.user.dni
+                dni: props.user.dni,
+                supervisor_to_report : props.user.supervisor_to_report
             }),
         });
-
-        const filteredRoles = ref(props.roles.filter(p => p.id !== 3))
-        const filterPositions = ref(props.positions)
-
-
-        const filteringRoles = () => {
-            if (state.form.business_id === 1) {
-                filteredRoles.value = props.roles.filter(p => p.id !== 3);
-                state.form.role_id = 1
-                filterPositions.value = props.positions;
-                state.form.position_id = 1
-            } else {
-                filteredRoles.value = props.roles.filter(p => p.id === 3);
-                state.form.role_id = 3
-
-                filterPositions.value = props.positions.filter(p => p.id !== 1)
-                state.form.position_id = props.positions[1].id
-            }
-
-        }
 
         const submit = () => {
             state.form.put(route("user.update", {user: props.user}));
@@ -249,15 +249,19 @@ export default {
             Inertia.visit(route("user.index"));
         };
 
-        filteringRoles()
+        const filteredSupervisor = ref(props.supervisors.filter(sv => sv.business_id === props.user.business_id))
+
+        const filteringSupervisors = () => {
+            state.form.supervisor_to_report = null
+            filteredSupervisor.value = props.supervisors.filter(sv => sv.business_id === state.form.business_id)
+        }
 
         return {
             ...toRefs(state),
             submit,
             back,
-            filteredRoles,
-            filterPositions,
-            filteringRoles,
+            filteringSupervisors,
+            filteredSupervisor
         };
     },
 };

@@ -25,7 +25,7 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'name' => 'Administrador',
+            'name' => 'Jose Perez Supervisor',
             'dni' => '00000000',
             'email' => $this->faker->unique()->email,
             'email_verified_at' => now(),

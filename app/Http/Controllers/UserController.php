@@ -49,8 +49,8 @@ class UserController extends Controller
         return Inertia::render('Users/Create', [
             'roles' => Role::all(),
             'businesses' => Business::all(),
-            'positions' => Position::all(),
-            'supervisors' => User::where('position_id',1)->get(),
+            'positions' => Position::where('id','<>',1)->get(),
+            'supervisors' => User::where('role_id',1)->get(),
         ]);
     }
 
@@ -66,7 +66,7 @@ class UserController extends Controller
             'role_id' => ['required', 'numeric', 'exists:roles,id'],
             'position_id' => ['required', 'numeric', 'exists:positions,id'],
             'business_id' => ['required', 'numeric', 'exists:businesses,id'],
-            'supervisor_to_report' => ['required','numeric','exists:users,id'],
+            'supervisor_to_report' => ['nullable','required_if:role_id,2','numeric','exists:users,id'],
             'password' => $this->passwordRules(),
         ])->validate();
 
@@ -76,11 +76,11 @@ class UserController extends Controller
             'role_id' => $request->role_id,
             'dni' => $request->dni,
             'password' => Hash::make($request->password),
-            'position_id' => $request->position_id,
+            'position_id' => $request->business_id === 1 ? 1 : $request->position_id,
             'business_id' => $request->business_id,
         ];
 
-        if($request->position_id === 2){
+        if($request->role_id === 2){
             $new_user['supervisor_to_report'] = $request->supervisor_to_report;
         }
 
@@ -100,26 +100,41 @@ class UserController extends Controller
         $this->authorize('isAdmin', User::class);
 
         return Inertia::render('Users/Edit', [
-            'user' => $user,
             'roles' => Role::all(),
             'businesses' => Business::all(),
-            'positions' => Position::all(),
+            'positions' => Position::where('id','<>',1)->get(),
+            'supervisors' => User::where('role_id',1)->get(),
+            'user' => $user
         ]);
     }
 
 
+    /**
+     * @throws ValidationException
+     */
     public function update(Request $request, User $user): \Illuminate\Http\RedirectResponse
     {
-        $fields = $request->validate([
-            'name' => 'string|required|min:3',
-            'email' => 'email|required|unique:users,email,' . $user->id,
+        Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id."id"],
+            'dni' => 'required|numeric|regex:/^[0-9]{8}+$/|unique:users,dni,'.$user->id."id",
             'role_id' => ['required', 'numeric', 'exists:roles,id'],
-            'dni' => [ "required", "numeric", "regex:/^[0-9]{8}+$/",  Rule::unique('users')->ignore($user->dni, "dni")],
             'position_id' => ['required', 'numeric', 'exists:positions,id'],
             'business_id' => ['required', 'numeric', 'exists:businesses,id'],
-        ]);
+            'supervisor_to_report' => ['nullable','required_if:role_id,2','numeric','exists:users,id'],
+        ])->validate();
 
-        $user->update($fields);
+        $edit_user = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role_id' => $request->role_id,
+            'dni' => $request->dni,
+            'position_id' => $request->business_id === 1 ? 1 : $request->position_id,
+            'business_id' => $request->business_id,
+            'supervisor_to_report' => $request->role_id === 2 ? $request->supervisor_to_report : null,
+        ];
+
+        $user->update($edit_user);
 
         $this->flashSuccess("El usuario ha sido actualizado");
 
@@ -130,12 +145,9 @@ class UserController extends Controller
     public function destroy(Request $request, User $user): \Illuminate\Http\RedirectResponse
     {
         $auth = Auth::user();
-        Log::debug($auth);
         if (Hash::check($request->password, $auth->getAuthPassword())) {
             $user->state = false;
-            $resp = $user->save();
-
-            Log::debug("EL guardadado fue {$resp}");
+            $user->save();
             $this->flashSuccess("El usuario ha sido eliminado");
             return redirect()->route('user.index');
         }

@@ -55,13 +55,8 @@ class ContractController extends Controller
     {
         $user = auth()->user();
 
-        $businesses = $user->role_id == 3
-            ? Business::where('id', 1)->get()
-            : Business::orderBy('business_name', 'ASC')->get();
-
-        $positions = $user->role_id == 3
-            ? Position::whereIn('id',[1,2])->get()
-            : Position::all();
+        $businesses = $user->business_id == 1 ? Business::where('id','<>', 1)->get() : Business::where('id', 1)->get();
+        $positions = $user->business_id == 1 ? Position::where('id','<>', 1)->get() : Position::where('id', 1)->get();
 
         return Inertia::render('Contract/Create', [
             'businesses' => $businesses,
@@ -87,7 +82,7 @@ class ContractController extends Controller
             'request_date' => $date->now(),
             'id_user_assigned' => $fields['reviewers'][0],
             'id_user_creator' => $user->id,
-            'business_id' => $fields['business_id'] == 0 ? $user->business_id : $fields['business_id']
+            'business_id' => $fields['business_id']
         ]);
 
         $contract->code = "{$date->year}{$fields['business_id']}{$contract->id}";
@@ -384,13 +379,14 @@ class ContractController extends Controller
     }
 
     private function notify(Contract $contract,$user,String $type){
+
         $mail = Mail::to($user->email);
         $contract->load('business');
-        $gerentes_generales_raw = User::where('position_id',3)->where('business_id',$contract->business->id)->get();
+        $gerentes_generales_raw = User::where('position_id',2)->where('business_id',$contract->business->id)->get();
         $gerentes_generales = $gerentes_generales_raw->map(function($item){ return $item->email; })->all();
 
         //check if is executor
-        if($user->position_id === 2){
+        if($user->role_id === 2){
             $user->load('supervisorToReport');
             array_push($gerentes_generales,$user->supervisorToReport->email);
         }

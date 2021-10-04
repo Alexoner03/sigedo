@@ -12,7 +12,7 @@
 
 
                 <div class="w-full flex justify-between flex-wrap">
-                    <div class="w-full p-4">
+                    <div class="w-full p-4" v-if="businessAuth === 1">
                         <p class="mb-2">Selecciona una empresa</p>
 
                         <select @change="getEmployees" v-model="selectedBusiness"
@@ -24,12 +24,12 @@
 
                     </div>
 
-                    <div class="w-full p-4">
+                    <div class="w-full p-4" v-if="businessAuth === 1">
                         <p class="mb-2">Selecciona un Area</p>
 
-                        <select @change="getEmployees2" v-model="selectedPosition"
+                        <select @change="getEmployees" v-model="selectedPosition"
                                 class="form-select w-full bg-transparent rounded focus:border-secondary focus:ring focus:ring-secondary focus:ring-opacity-50 uppercase">
-                            <option :value="position" v-for="(position, index) in filterPositions" :key="index">
+                            <option :value="position" v-for="(position, index) in positions" :key="index">
                                 {{ position.description }}
                             </option>
                         </select>
@@ -37,7 +37,11 @@
                     </div>
 
                     <div class="w-full p-4">
-                        <p class="mb-2" v-if="employees.length > 0">Selecciona un Empleado</p>
+                        <p class="mb-2" v-if="employees.length > 0">
+                            {{
+                                businessAuth === 1 ? "Seleccione un revisor" : "Selecciona al miembro de Sanabria y Asociados que quieres que revise tu documento"
+                            }}
+                        </p>
 
                         <select v-if="employees.length > 0" name="position" v-model="selectedEmployee"
                                 class="form-select w-full bg-transparent rounded focus:border-secondary focus:ring focus:ring-secondary focus:ring-opacity-50 uppercase">
@@ -62,24 +66,6 @@
                                 </li>
                             </ul>
                         </p>
-
-                    </div>
-
-                    <div class="w-full p-4 mb-4" v-if="$page.props.user.business_id === 1">
-                        <h2 class="text-center mb-4 font-light text-4xl text-secondary leading-tight">
-                            Empresa enlazada al contrato
-                        </h2>
-
-                        <small>Usted es un miembro de Sanabria & Asociados, por lo tanto debe seleccionar una empresa enlazada al contrato.</small>
-
-                        <p class="my-2">Selecciona una empresa</p>
-
-                        <select name="businessContract"  v-model="businessesContract"
-                                class="form-select w-full bg-transparent rounded focus:border-secondary focus:ring focus:ring-secondary focus:ring-opacity-50 uppercase">
-                            <option :value="businees" v-for="(businees, index) in businesses" :key="index">
-                                {{ businees.business_name }}
-                            </option>
-                        </select>
 
                     </div>
 
@@ -143,6 +129,7 @@ import {useDropzone} from "vue3-dropzone";
 import {ref} from "vue";
 import {useForm, usePage} from '@inertiajs/inertia-vue3'
 import ValidationErrors from '../../Jetstream/ValidationErrors.vue';
+import {computed} from "@vue/runtime-core";
 
 
 export default {
@@ -159,29 +146,12 @@ export default {
     props: ['collaborators', 'clients', 'businesses', 'positions'],
 
     setup(props) {
-
+        console.log()
+        const businessAuth = computed(() => usePage().props.value.user.business_id)
         const selectedBusiness = ref(props.businesses[0])
         const selectedPosition = ref(props.positions[0])
         const selectedEmployee = ref(null)
         const employees = ref([])
-        const page = usePage();
-        const filterPositions = ref(props.positions)
-        const businessesContract = ref(props.businesses[0])
-
-        const filteringPositions = (businness_id) =>
-        {
-            if(businness_id === 1 )
-            {
-                filterPositions.value = props.positions.filter(p => [1,2].includes(p.id));
-            }
-            else
-            {
-                filterPositions.value = props.positions.filter(p => ![1,2].includes(p.id))
-                selectedPosition.value = props.positions[2]
-            }
-
-        }
-
         const form = useForm({
             files: [],
             business_id: 0,
@@ -205,23 +175,11 @@ export default {
 
 
         const getEmployees = async () => {
-            filteringPositions(selectedBusiness.value.id)
             const raw = await fetch(route('business.position.users', {
                 business: selectedBusiness.value.id,
                 position: selectedPosition.value.id
             }))
-            const response = await raw.json()
-            employees.value = response
-            selectedEmployee.value = employees.value[0]
-        }
-
-        const getEmployees2 = async () => {
-            const raw = await fetch(route('business.position.users', {
-                business: selectedBusiness.value.id,
-                position: selectedPosition.value.id
-            }))
-            const response = await raw.json()
-            employees.value = response
+            employees.value = await raw.json()
             selectedEmployee.value = employees.value[0]
         }
 
@@ -252,12 +210,7 @@ export default {
         const submitForm = async () => {
 
             form.reviewers = form.reviewers.map(rev => rev.id)
-
-            if(page.props.value.user.business_id === 1)
-            {
-                form.business_id = businessesContract.value.id
-            }
-
+            form.business_id = businessAuth.value === 1 ? selectedBusiness.value.id : businessAuth.value
             form.post(route('contract.store'), {
                 onError: () => {
                     form.reset();
@@ -266,7 +219,6 @@ export default {
             })
 
         }
-
 
         getEmployees();
 
@@ -277,10 +229,7 @@ export default {
             selectedEmployee,
             employees,
             form,
-            filterPositions,
-            filteringPositions,
-            businessesContract,
-            getEmployees2,
+            businessAuth,
 
             getEmployees,
             addReviewer,

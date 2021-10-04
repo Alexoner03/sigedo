@@ -10,12 +10,8 @@ class UserPolicy
 {
     use HandlesAuthorization;
 
-    public function isAdmin(User $user)
+    public function isAdmin(User $user): bool
     {
-        if ($user->role->id === 1) {
-            return true;
-        }
-
-        return false;
+        return $user->id === 1;
     }
 }

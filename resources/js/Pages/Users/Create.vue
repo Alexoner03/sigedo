@@ -24,7 +24,7 @@
                             />
                         </div>
 
-                        <div>
+                        <div class="mt-4">
                             <jet-label for="dni" value="Dni" />
                             <jet-input
                                 id="dni"
@@ -51,10 +51,8 @@
                         <div class="mt-4">
                             <jet-label for="business_id" value="Empresa" />
                             <select
-                                @change="filteringRoles"
-                                name="business_id"
+                                @change="filteringSupervisors"
                                 id="business_id"
-                                required
                                 v-model="form.business_id"
                                 class="
                                     mt-1
@@ -84,9 +82,7 @@
                         <div class="mt-4">
                             <jet-label for="role_id" value="Rol de Usuario" />
                             <select
-                                name="role_id"
                                 id="role_id"
-                                required
                                 v-model="form.role_id"
                                 class="
                                     mt-1
@@ -104,7 +100,7 @@
                                 "
                             >
                                 <option
-                                    v-for="(role, index) in filteredRoles"
+                                    v-for="(role, index) in roles"
                                     :key="index"
                                     :value="role.id"
                                 >
@@ -113,12 +109,10 @@
                             </select>
                         </div>
 
-                        <div class="mt-4">
+                        <div class="mt-4" v-if="form.business_id !== 1">
                             <jet-label for="position_id" value="Área" />
                             <select
-                                name="position_id"
                                 id="position_id"
-                                required
                                 v-model="form.position_id"
                                 class="
                                     mt-1
@@ -136,7 +130,7 @@
                                 "
                             >
                                 <option
-                                    v-for="(position, index) in filterPositions"
+                                    v-for="(position, index) in positions"
                                     :key="index"
                                     :value="position.id"
                                 >
@@ -145,7 +139,7 @@
                             </select>
                         </div>
 
-                        <div class="mt-4" v-if="isExecutor">
+                        <div class="mt-4" v-if="form.role_id === 2">
                             <jet-label for="supervisor_to_report_id" value="Supervisor a reportar" />
                             <select
                                 name="supervisor_to_report_id"
@@ -167,7 +161,7 @@
                                 "
                             >
                                 <option
-                                    v-for="(supervisor, index) in supervisors"
+                                    v-for="(supervisor, index) in filteredSupervisor"
                                     :key="index"
                                     :value="supervisor.id"
                                 >
@@ -260,33 +254,12 @@ export default {
                 role_id: 1,
                 password: "",
                 password_confirmation: "",
-                position_id : 1,
+                position_id : 2,
                 business_id : 1,
-                supervisor_to_report : 1,
+                supervisor_to_report : null,
                 dni : null
             }),
         });
-        const isExecutor = ref(false)
-        const filteredRoles = ref(props.roles.filter(p => p.id !== 3))
-        const filterPositions = ref(props.positions.filter(p => [1,2].includes(p.id)))
-
-        const filteringRoles = () =>
-        {
-            if(state.form.business_id === 1 )
-            {
-                filteredRoles.value = props.roles.filter(p => p.id !== 3);
-                state.form.role_id = 1
-                filterPositions.value = props.positions.filter(p => [1,2].includes(p.id));
-                state.form.position_id = 1
-            }
-            else{
-                filteredRoles.value = props.roles.filter(p => p.id === 3);
-                state.form.role_id = 3
-
-                filterPositions.value = props.positions.filter(p => ![1,2].includes(p.id));
-                state.form.position_id = props.positions[2].id
-            }
-        }
 
         const submit = () => {
             state.form.post(route("user.store"), {
@@ -299,22 +272,19 @@ export default {
             Inertia.visit(route("user.index"));
         };
 
-        watch(
-            () => state.form.position_id,
-            (position) => {
-                isExecutor.value = position === 2
-            }
-        )
+        const filteredSupervisor = ref(props.supervisors.filter(sv => sv.business_id === 1))
+
+        const filteringSupervisors = () => {
+            state.form.supervisor_to_report = null
+            filteredSupervisor.value = props.supervisors.filter(sv => sv.business_id === state.form.business_id)
+        }
 
         return {
-            filteredRoles,
-            filterPositions,
-            isExecutor,
-
             ...toRefs(state),
             submit,
             back,
-            filteringRoles
+            filteringSupervisors,
+            filteredSupervisor
         };
     },
 };
