@@ -1,0 +1,195 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/Optima-Bold.woff2') format('woff2'),
+        url('/fonts/Optima-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/Optima.woff2') format('woff2'),
+        url('/fonts/Optima.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaOblique.woff2') format('woff2'),
+        url('/fonts/OptimaOblique.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaMedium.woff2') format('woff2'),
+        url('/fonts/OptimaMedium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaDemiBold.woff2') format('woff2'),
+        url('/fonts/OptimaDemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaBlackItalic.woff2') format('woff2'),
+        url('/fonts/OptimaBlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaDemiBoldItalic.woff2') format('woff2'),
+        url('/fonts/OptimaDemiBoldItalic.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/Optima-Italic.woff2') format('woff2'),
+        url('/fonts/Optima-Italic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaBoldOblique.woff2') format('woff2'),
+        url('/fonts/OptimaBoldOblique.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/OptimaBlack.woff2') format('woff2'),
+        url('/fonts/OptimaBlack.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Optima';
+    src: url('/fonts/Optima.woff2') format('woff2'),
+        url('/fonts/Optima.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+
+*{
+    font-family: "Optima";
+}
+
+input[type]{
+    background-color: transparent
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+@screen md {
+  table.gridjs-table{
+    @apply min-w-full
+  }
+}
+
+
+/* contract table */
+
+.contract-button {
+    @apply md:mr-4 
+    inline-flex
+    items-center 
+    px-4 
+    py-2
+    mb-2
+    bg-primary 
+    border border-transparent 
+    rounded-md 
+    font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 
+    focus:outline-none focus:border-gray-900 focus:ring 
+    focus:ring-gray-300 disabled:opacity-25 transition;
+}
+
+.contract-button-edit {
+    @apply md:mr-4 
+    inline-flex
+    items-center 
+    px-4 
+    py-2
+    mb-2
+    bg-yellow-300 
+    border border-transparent 
+    rounded-md 
+    font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-500 
+    focus:outline-none focus:border-yellow-500 focus:ring 
+    focus:ring-gray-300 disabled:opacity-25 transition;
+}
+
+.contract-button-delete {
+    @apply md:mr-4 
+    inline-flex
+    items-center 
+    px-4 
+    py-2
+    mb-2
+    bg-red-500 
+    border border-transparent 
+    rounded-md 
+    font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 
+    focus:outline-none focus:border-red-900 focus:ring 
+    focus:ring-red-300 disabled:opacity-25 transition;
+}

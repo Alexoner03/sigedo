@@ -1,0 +1,31 @@
+<template>
+    <div v-if="hasErrors">
+        <div class="font-medium text-red-600">Whoops! Algo salió mal.</div>
+
+        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+            <li v-for="(error, key) in errors" :key="key">{{ error }}</li>
+        </ul>
+    </div>
+</template>
+
+<script>
+    export default {
+        props : {
+            isInBackground : {
+                type: Boolean,
+                default : false
+            }
+        },
+        computed: {
+            errors() {
+                return this.$page.props.errors
+            },
+            hasErrors() {
+                if(this.isInBackground){
+                    return false;
+                }
+                return Object.keys(this.errors).length > 0;
+            },
+        }
+    }
+</script>
