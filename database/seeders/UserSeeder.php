@@ -18,8 +18,8 @@ class UserSeeder extends Seeder
     public function run()
     {
 
-        // $businesses = Business::all();
-        // $positions = Position::all();
+//        $businesses = Business::all();
+//        $positions = Position::all();
 
         User::create([
             'email' => 'administrador@sigedo.estudiosanabria.com',
@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
         ]);
 
         // foreach ($businesses as $business) {
-            
+
         //     if($business->id === 1){
 
         //        foreach ($positions as $position) {
@@ -57,8 +57,8 @@ class UserSeeder extends Seeder
         //                     'business_id' => $business->id,
         //                 ]);
         //             }
-        //        } 
-                
+        //        }
+
         //     }
         // }
     }
